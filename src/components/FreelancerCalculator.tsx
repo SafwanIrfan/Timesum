@@ -10,6 +10,7 @@ import { SummaryCard } from './SummaryCard';
 import { InvoiceDownload } from './InvoiceDownload';
 import { Button } from '@/components/ui/button';
 import { Clock, DollarSign, Calculator, Trash2, LogOut } from 'lucide-react';
+import logo from '@/assets/logo.png';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -193,15 +194,10 @@ export function FreelancerCalculator() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-primary">
-                <Calculator className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-xl font-display font-bold text-foreground">FreelanceCalc</h1>
-                <p className="text-xs text-muted-foreground">
-                  {user?.email}
-                </p>
-              </div>
+              <img src={logo} alt="Timesum" className="h-10 w-auto" />
+              <p className="text-xs text-muted-foreground">
+                {user?.email}
+              </p>
             </div>
             <div className="flex items-center gap-3">
               <InvoiceDownload
