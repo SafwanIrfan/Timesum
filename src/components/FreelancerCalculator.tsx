@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TimeFormat, TimeEntry, Currency, CURRENCIES } from '@/types/freelancer';
 import { decimalToHHMMSS, formatDecimalHours, formatCurrency } from '@/utils/timeUtils';
 import { TimeFormatToggle } from './TimeFormatToggle';
@@ -9,24 +9,118 @@ import { HourlyRateInput } from './HourlyRateInput';
 import { SummaryCard } from './SummaryCard';
 import { InvoiceDownload } from './InvoiceDownload';
 import { Button } from '@/components/ui/button';
-import { Clock, DollarSign, Calculator, Trash2 } from 'lucide-react';
+import { Clock, DollarSign, Calculator, Trash2, LogOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 export function FreelancerCalculator() {
+  const { user, signOut } = useAuth();
   const [timeFormat, setTimeFormat] = useState<TimeFormat>('hh:mm:ss');
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [hourlyRate, setHourlyRate] = useState<string>('');
   const [currency, setCurrency] = useState<Currency>(CURRENCIES[0]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load user's time entries from database
+  useEffect(() => {
+    if (!user) return;
+
+    const loadEntries = async () => {
+      const { data, error } = await supabase
+        .from('time_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading entries:', error);
+        toast({
+          title: 'Error loading entries',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else if (data) {
+        setEntries(data.map(entry => ({
+          id: entry.id,
+          value: entry.value,
+          decimalHours: Number(entry.decimal_hours),
+          createdAt: new Date(entry.created_at),
+        })));
+      }
+      setIsLoading(false);
+    };
+
+    const loadProfile = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('default_currency_code, default_hourly_rate')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (data) {
+        if (data.default_currency_code) {
+          const savedCurrency = CURRENCIES.find(c => c.code === data.default_currency_code);
+          if (savedCurrency) setCurrency(savedCurrency);
+        }
+        if (data.default_hourly_rate) {
+          setHourlyRate(String(data.default_hourly_rate));
+        }
+      }
+    };
+
+    loadEntries();
+    loadProfile();
+  }, [user]);
+
+  // Save currency and rate to profile when changed
+  useEffect(() => {
+    if (!user || isLoading) return;
+
+    const saveProfile = async () => {
+      await supabase
+        .from('profiles')
+        .update({
+          default_currency_code: currency.code,
+          default_hourly_rate: hourlyRate ? parseFloat(hourlyRate) : null,
+        })
+        .eq('user_id', user.id);
+    };
+
+    const debounce = setTimeout(saveProfile, 500);
+    return () => clearTimeout(debounce);
+  }, [currency, hourlyRate, user, isLoading]);
 
   const totalDecimalHours = entries.reduce((sum, entry) => sum + entry.decimalHours, 0);
   const totalEarnings = totalDecimalHours * (parseFloat(hourlyRate) || 0);
 
-  const handleAddEntry = (value: string, decimalHours: number) => {
+  const handleAddEntry = async (value: string, decimalHours: number) => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('time_entries')
+      .insert({
+        user_id: user.id,
+        value,
+        decimal_hours: decimalHours,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: 'Error adding entry',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const newEntry: TimeEntry = {
-      id: crypto.randomUUID(),
-      value,
-      decimalHours,
-      createdAt: new Date(),
+      id: data.id,
+      value: data.value,
+      decimalHours: Number(data.decimal_hours),
+      createdAt: new Date(data.created_at),
     };
     setEntries(prev => [newEntry, ...prev]);
     toast({
@@ -35,16 +129,62 @@ export function FreelancerCalculator() {
     });
   };
 
-  const handleRemoveEntry = (id: string) => {
+  const handleRemoveEntry = async (id: string) => {
+    const { error } = await supabase
+      .from('time_entries')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: 'Error removing entry',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setEntries(prev => prev.filter(entry => entry.id !== id));
   };
 
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('time_entries')
+      .delete()
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast({
+        title: 'Error clearing entries',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setEntries([]);
     toast({
       title: "All entries cleared",
     });
   };
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You have been signed out successfully.",
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-hero">
@@ -58,7 +198,9 @@ export function FreelancerCalculator() {
               </div>
               <div>
                 <h1 className="text-xl font-display font-bold text-foreground">FreelanceCalc</h1>
-                <p className="text-xs text-muted-foreground">Track hours, calculate earnings</p>
+                <p className="text-xs text-muted-foreground">
+                  {user?.email}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -70,6 +212,9 @@ export function FreelancerCalculator() {
                 totalEarnings={totalEarnings}
               />
               <TimeFormatToggle value={timeFormat} onChange={setTimeFormat} />
+              <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign out">
+                <LogOut className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </div>
