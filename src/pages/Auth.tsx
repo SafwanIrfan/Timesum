@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
-import { Calculator, Mail, Lock, User, Github } from 'lucide-react';
+import { Mail, Lock, User, Github } from 'lucide-react';
 import { z } from 'zod';
+import logo from '@/assets/logo.png';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -133,11 +134,8 @@ export default function Auth() {
       <Card className="w-full max-w-md bg-card/95 backdrop-blur-sm border-border">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-xl bg-gradient-primary">
-              <Calculator className="w-8 h-8 text-primary-foreground" />
-            </div>
+            <img src={logo} alt="Timesum" className="h-16 w-auto" />
           </div>
-          <CardTitle className="text-2xl font-display">FreelanceCalc</CardTitle>
           <CardDescription>Track hours, calculate earnings, manage invoices</CardDescription>
         </CardHeader>
         <CardContent>
