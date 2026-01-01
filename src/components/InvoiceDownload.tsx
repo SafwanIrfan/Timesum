@@ -205,7 +205,7 @@ export function InvoiceDownload({
 
           <div class="footer">
             <p>Thank you for your business!</p>
-            <p>Generated with FreelanceCalc</p>
+            <p>Generated with Timesum</p>
           </div>
 
           <script>
