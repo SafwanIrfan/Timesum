@@ -7,6 +7,7 @@ import { TimeEntryList } from './TimeEntryList';
 import { CurrencySelect } from './CurrencySelect';
 import { HourlyRateInput } from './HourlyRateInput';
 import { SummaryCard } from './SummaryCard';
+import { InvoiceDownload } from './InvoiceDownload';
 import { Button } from '@/components/ui/button';
 import { Clock, DollarSign, Calculator, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -60,7 +61,16 @@ export function FreelancerCalculator() {
                 <p className="text-xs text-muted-foreground">Track hours, calculate earnings</p>
               </div>
             </div>
-            <TimeFormatToggle value={timeFormat} onChange={setTimeFormat} />
+            <div className="flex items-center gap-3">
+              <InvoiceDownload
+                entries={entries}
+                hourlyRate={hourlyRate}
+                currency={currency}
+                totalDecimalHours={totalDecimalHours}
+                totalEarnings={totalEarnings}
+              />
+              <TimeFormatToggle value={timeFormat} onChange={setTimeFormat} />
+            </div>
           </div>
         </div>
       </header>
