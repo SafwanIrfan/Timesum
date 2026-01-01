@@ -195,8 +195,8 @@ export function FreelancerCalculator() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img src={logo} alt="Timesum" className="h-14 w-auto" />
-              <p className="text-xs text-muted-foreground">
-                {user?.email}
+              <p className="text-sm text-muted-foreground font-medium">
+                {user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0]}
               </p>
             </div>
             <div className="flex items-center gap-3">
