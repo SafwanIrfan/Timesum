@@ -213,8 +213,9 @@ export function FreelancerCalculator() {
 
       {/* Hero Greeting */}
       <div className="container mx-auto px-4 pt-8">
-        <h1 className="text-3xl md:text-4xl font-display font-bold text-cyan-400">
-          Hey {user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0]}
+        <h1 className="text-3xl md:text-4xl font-display font-bold">
+          <span className="text-foreground">Hey </span>
+          <span className="text-primary">{user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0]}</span>
         </h1>
       </div>
 
