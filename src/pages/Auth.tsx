@@ -134,7 +134,7 @@ export default function Auth() {
       <Card className="w-full max-w-md bg-card/95 backdrop-blur-sm border-border">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <img src={logo} alt="Timesum" className="h-16 w-auto" />
+            <img src={logo} alt="Timesum" className="h-24 w-auto" />
           </div>
           <CardDescription>Track hours, calculate earnings, manage invoices</CardDescription>
         </CardHeader>
