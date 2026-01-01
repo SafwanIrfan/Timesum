@@ -17,6 +17,7 @@ interface InvoiceDownloadProps {
   currency: Currency;
   totalDecimalHours: number;
   totalEarnings: number;
+  userName?: string;
 }
 
 export function InvoiceDownload({
@@ -25,6 +26,7 @@ export function InvoiceDownload({
   currency,
   totalDecimalHours,
   totalEarnings,
+  userName,
 }: InvoiceDownloadProps) {
   const invoiceRef = useRef<HTMLDivElement>(null);
 
@@ -148,6 +150,7 @@ export function InvoiceDownload({
           <div class="invoice-header">
             <div>
               <h1 class="invoice-title">INVOICE</h1>
+              ${userName ? `<p style="margin-top: 8px; font-size: 16px; color: #334155;"><strong>From:</strong> ${userName}</p>` : ''}
             </div>
             <div class="invoice-meta">
               <p class="invoice-number">${invoiceNumber}</p>
