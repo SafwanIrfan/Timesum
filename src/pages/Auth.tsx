@@ -10,6 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { Mail, Lock, User, Github } from 'lucide-react';
 import { z } from 'zod';
 import logo from '@/assets/logo.png';
+import { PasswordStrengthMeter, validatePasswordStrength } from '@/components/PasswordStrengthMeter';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -22,6 +23,7 @@ export default function Auth() {
   const [fullName, setFullName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [activeTab, setActiveTab] = useState('signin');
 
   useEffect(() => {
     if (!loading && user) {
@@ -29,7 +31,7 @@ export default function Auth() {
     }
   }, [user, loading, navigate]);
 
-  const validateForm = () => {
+  const validateForm = (isSignUp: boolean = false) => {
     const newErrors: { email?: string; password?: string } = {};
     
     const emailResult = emailSchema.safeParse(email);
@@ -37,9 +39,18 @@ export default function Auth() {
       newErrors.email = emailResult.error.errors[0].message;
     }
     
-    const passwordResult = passwordSchema.safeParse(password);
-    if (!passwordResult.success) {
-      newErrors.password = passwordResult.error.errors[0].message;
+    if (isSignUp) {
+      // Strong password validation for signup
+      const strengthResult = validatePasswordStrength(password);
+      if (!strengthResult.isValid) {
+        newErrors.password = strengthResult.message;
+      }
+    } else {
+      // Basic validation for signin
+      const passwordResult = passwordSchema.safeParse(password);
+      if (!passwordResult.success) {
+        newErrors.password = passwordResult.error.errors[0].message;
+      }
     }
     
     setErrors(newErrors);
@@ -48,7 +59,7 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm(false)) return;
     
     setIsLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -67,7 +78,7 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm(true)) return;
     
     setIsLoading(true);
     const { error } = await supabase.auth.signUp({
@@ -139,7 +150,7 @@ export default function Auth() {
           <CardDescription>Track hours, calculate earnings, manage invoices</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs defaultValue="signin" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -257,13 +268,14 @@ export default function Auth() {
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       type="password"
-                      placeholder="Password (min 6 characters)"
+                      placeholder="Password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-10"
                       required
                     />
                   </div>
+                  <PasswordStrengthMeter password={password} />
                   {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
