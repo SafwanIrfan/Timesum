@@ -201,6 +201,7 @@ export function FreelancerCalculator() {
                 currency={currency}
                 totalDecimalHours={totalDecimalHours}
                 totalEarnings={totalEarnings}
+                userName={user?.user_metadata?.full_name}
               />
               <TimeFormatToggle value={timeFormat} onChange={setTimeFormat} />
               <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign out">
