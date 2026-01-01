@@ -193,12 +193,7 @@ export function FreelancerCalculator() {
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src={logo} alt="Timesum" className="h-14 w-auto" />
-              <p className="text-sm text-muted-foreground font-medium">
-                {user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0]}
-              </p>
-            </div>
+            <img src={logo} alt="Timesum" className="h-16 w-auto" />
             <div className="flex items-center gap-3">
               <InvoiceDownload
                 entries={entries}
@@ -215,6 +210,13 @@ export function FreelancerCalculator() {
           </div>
         </div>
       </header>
+
+      {/* Hero Greeting */}
+      <div className="container mx-auto px-4 pt-8">
+        <h1 className="text-3xl md:text-4xl font-display font-bold text-cyan-400">
+          Hey {user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0]}
+        </h1>
+      </div>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
