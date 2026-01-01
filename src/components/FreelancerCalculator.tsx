@@ -194,7 +194,7 @@ export function FreelancerCalculator() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src={logo} alt="Timesum" className="h-10 w-auto" />
+              <img src={logo} alt="Timesum" className="h-14 w-auto" />
               <p className="text-xs text-muted-foreground">
                 {user?.email}
               </p>
