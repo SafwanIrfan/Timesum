@@ -143,7 +143,11 @@ export function FreelancerCalculator() {
   }, [currency, hourlyRate, user, isLoading]);
 
   const totalDecimalHours = entries.reduce((sum, entry) => sum + entry.decimalHours, 0);
-  const totalEarnings = totalDecimalHours * (parseFloat(hourlyRate) || 0);
+  const currentMonthEarnings = totalDecimalHours * (parseFloat(hourlyRate) || 0);
+
+  // Calculate total earnings across all periods
+  const allPeriodHours = Object.values(periodEntries).flat().reduce((sum, entry) => sum + entry.decimalHours, 0);
+  const totalEarnings = (totalDecimalHours + allPeriodHours) * (parseFloat(hourlyRate) || 0);
 
   const handleAddEntry = async (value: string, decimalHours: number) => {
     if (!user) return;
@@ -436,7 +440,7 @@ export function FreelancerCalculator() {
         <div className="max-w-4xl mx-auto space-y-8">
           
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
             <SummaryCard
               title="Current Month Hours"
               value={decimalToHHMMSS(totalDecimalHours)}
@@ -453,8 +457,15 @@ export function FreelancerCalculator() {
             />
             <SummaryCard
               title="Current Earnings"
-              value={formatCurrency(totalEarnings, currency.symbol)}
+              value={formatCurrency(currentMonthEarnings, currency.symbol)}
               subtitle={`${entries.length} entries logged`}
+              icon={<Calculator className="w-6 h-6" />}
+              variant="default"
+            />
+            <SummaryCard
+              title="Total Earnings"
+              value={formatCurrency(totalEarnings, currency.symbol)}
+              subtitle={`All time (${periods.length + 1} months)`}
               icon={<Calculator className="w-6 h-6" />}
               variant="primary"
             />
