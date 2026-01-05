@@ -8,12 +8,22 @@ import { CurrencySelect } from './CurrencySelect';
 import { HourlyRateInput } from './HourlyRateInput';
 import { SummaryCard } from './SummaryCard';
 import { InvoiceDownload } from './InvoiceDownload';
+import { MonthlyPeriodCard } from './MonthlyPeriodCard';
+import { CloseMonthDialog } from './CloseMonthDialog';
 import { Button } from '@/components/ui/button';
-import { Clock, DollarSign, Calculator, Trash2, LogOut } from 'lucide-react';
+import { Clock, DollarSign, Calculator, Trash2, LogOut, Archive, History } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+
+interface MonthlyPeriod {
+  id: string;
+  name: string;
+  month: number;
+  year: number;
+  isClosed: boolean;
+}
 
 export function FreelancerCalculator() {
   const { user, signOut } = useAuth();
@@ -22,13 +32,35 @@ export function FreelancerCalculator() {
   const [hourlyRate, setHourlyRate] = useState<string>('');
   const [currency, setCurrency] = useState<Currency>(CURRENCIES[0]);
   const [isLoading, setIsLoading] = useState(true);
+  const [periods, setPeriods] = useState<MonthlyPeriod[]>([]);
+  const [periodEntries, setPeriodEntries] = useState<Record<string, TimeEntry[]>>({});
+  const [showCloseDialog, setShowCloseDialog] = useState(false);
 
-  // Load user's time entries from database
+  // Load user's data from database
   useEffect(() => {
     if (!user) return;
 
-    const loadEntries = async () => {
-      const { data, error } = await supabase
+    const loadData = async () => {
+      // Load periods
+      const { data: periodsData } = await supabase
+        .from('monthly_periods')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('year', { ascending: false })
+        .order('month', { ascending: false });
+
+      if (periodsData) {
+        setPeriods(periodsData.map(p => ({
+          id: p.id,
+          name: p.name,
+          month: p.month,
+          year: p.year,
+          isClosed: p.is_closed,
+        })));
+      }
+
+      // Load all time entries
+      const { data: entriesData, error } = await supabase
         .from('time_entries')
         .select('*')
         .eq('user_id', user.id)
@@ -41,13 +73,31 @@ export function FreelancerCalculator() {
           description: error.message,
           variant: 'destructive',
         });
-      } else if (data) {
-        setEntries(data.map(entry => ({
-          id: entry.id,
-          value: entry.value,
-          decimalHours: Number(entry.decimal_hours),
-          createdAt: new Date(entry.created_at),
-        })));
+      } else if (entriesData) {
+        // Separate current entries (no period) from period entries
+        const current: TimeEntry[] = [];
+        const byPeriod: Record<string, TimeEntry[]> = {};
+
+        entriesData.forEach(entry => {
+          const mappedEntry: TimeEntry = {
+            id: entry.id,
+            value: entry.value,
+            decimalHours: Number(entry.decimal_hours),
+            createdAt: new Date(entry.created_at),
+          };
+
+          if (entry.period_id) {
+            if (!byPeriod[entry.period_id]) {
+              byPeriod[entry.period_id] = [];
+            }
+            byPeriod[entry.period_id].push(mappedEntry);
+          } else {
+            current.push(mappedEntry);
+          }
+        });
+
+        setEntries(current);
+        setPeriodEntries(byPeriod);
       }
       setIsLoading(false);
     };
@@ -70,7 +120,7 @@ export function FreelancerCalculator() {
       }
     };
 
-    loadEntries();
+    loadData();
     loadProfile();
   }, [user]);
 
@@ -130,6 +180,47 @@ export function FreelancerCalculator() {
     });
   };
 
+  const handleAddEntryToPeriod = async (periodId: string, value: string, decimalHours: number) => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('time_entries')
+      .insert({
+        user_id: user.id,
+        value,
+        decimal_hours: decimalHours,
+        period_id: periodId,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: 'Error adding entry',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const newEntry: TimeEntry = {
+      id: data.id,
+      value: data.value,
+      decimalHours: Number(data.decimal_hours),
+      createdAt: new Date(data.created_at),
+    };
+
+    setPeriodEntries(prev => ({
+      ...prev,
+      [periodId]: [newEntry, ...(prev[periodId] || [])],
+    }));
+
+    toast({
+      title: "Entry added",
+      description: `Added ${formatDecimalHours(decimalHours)} hours`,
+    });
+  };
+
   const handleRemoveEntry = async (id: string) => {
     const { error } = await supabase
       .from('time_entries')
@@ -148,13 +239,35 @@ export function FreelancerCalculator() {
     setEntries(prev => prev.filter(entry => entry.id !== id));
   };
 
+  const handleRemoveEntryFromPeriod = async (periodId: string, entryId: string) => {
+    const { error } = await supabase
+      .from('time_entries')
+      .delete()
+      .eq('id', entryId);
+
+    if (error) {
+      toast({
+        title: 'Error removing entry',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setPeriodEntries(prev => ({
+      ...prev,
+      [periodId]: prev[periodId]?.filter(entry => entry.id !== entryId) || [],
+    }));
+  };
+
   const handleClearAll = async () => {
     if (!user) return;
 
     const { error } = await supabase
       .from('time_entries')
       .delete()
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .is('period_id', null);
 
     if (error) {
       toast({
@@ -168,6 +281,104 @@ export function FreelancerCalculator() {
     setEntries([]);
     toast({
       title: "All entries cleared",
+    });
+  };
+
+  const handleCloseMonth = async (name: string, month: number, year: number) => {
+    if (!user || entries.length === 0) {
+      toast({
+        title: 'No entries to close',
+        description: 'Add some time entries before closing the month.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Create the period
+    const { data: periodData, error: periodError } = await supabase
+      .from('monthly_periods')
+      .insert({
+        user_id: user.id,
+        name,
+        month,
+        year,
+        is_closed: true,
+        closed_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (periodError) {
+      toast({
+        title: 'Error closing month',
+        description: periodError.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Move current entries to the period
+    const entryIds = entries.map(e => e.id);
+    const { error: updateError } = await supabase
+      .from('time_entries')
+      .update({ period_id: periodData.id })
+      .in('id', entryIds);
+
+    if (updateError) {
+      toast({
+        title: 'Error moving entries',
+        description: updateError.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Update local state
+    const newPeriod: MonthlyPeriod = {
+      id: periodData.id,
+      name: periodData.name,
+      month: periodData.month,
+      year: periodData.year,
+      isClosed: periodData.is_closed,
+    };
+
+    setPeriods(prev => [newPeriod, ...prev]);
+    setPeriodEntries(prev => ({
+      ...prev,
+      [periodData.id]: entries,
+    }));
+    setEntries([]);
+
+    toast({
+      title: 'Month closed',
+      description: `${name} has been saved with ${entryIds.length} entries.`,
+    });
+  };
+
+  const handleDeletePeriod = async (periodId: string) => {
+    const { error } = await supabase
+      .from('monthly_periods')
+      .delete()
+      .eq('id', periodId);
+
+    if (error) {
+      toast({
+        title: 'Error deleting period',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setPeriods(prev => prev.filter(p => p.id !== periodId));
+    setPeriodEntries(prev => {
+      const updated = { ...prev };
+      delete updated[periodId];
+      return updated;
+    });
+
+    toast({
+      title: 'Period deleted',
     });
   };
 
@@ -227,7 +438,7 @@ export function FreelancerCalculator() {
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
             <SummaryCard
-              title="Total Hours"
+              title="Current Month Hours"
               value={decimalToHHMMSS(totalDecimalHours)}
               subtitle={`${formatDecimalHours(totalDecimalHours)} decimal hours`}
               icon={<Clock className="w-6 h-6" />}
@@ -241,7 +452,7 @@ export function FreelancerCalculator() {
               variant="default"
             />
             <SummaryCard
-              title="Total Earnings"
+              title="Current Earnings"
               value={formatCurrency(totalEarnings, currency.symbol)}
               subtitle={`${entries.length} entries logged`}
               icon={<Calculator className="w-6 h-6" />}
@@ -255,19 +466,32 @@ export function FreelancerCalculator() {
             <div className="bg-card rounded-xl border border-border p-6 shadow-sm animate-slide-up" style={{ animationDelay: '100ms' }}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-display font-semibold text-foreground">
-                  Add Time Entry
+                  Current Month
                 </h2>
-                {entries.length > 0 && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handleClearAll}
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Clear all
-                  </Button>
-                )}
+                <div className="flex items-center gap-2">
+                  {entries.length > 0 && (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setShowCloseDialog(true)}
+                        className="text-primary border-primary/50 hover:bg-primary/10"
+                      >
+                        <Archive className="w-4 h-4 mr-1" />
+                        Close Month
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={handleClearAll}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Clear
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
               <div className="space-y-4">
                 <TimeEntryInput format={timeFormat} onAdd={handleAddEntry} />
@@ -328,6 +552,33 @@ export function FreelancerCalculator() {
             </div>
           </div>
 
+          {/* Monthly History */}
+          {periods.length > 0 && (
+            <div className="animate-slide-up" style={{ animationDelay: '300ms' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <History className="w-5 h-5 text-muted-foreground" />
+                <h2 className="text-lg font-display font-semibold text-foreground">
+                  Monthly History
+                </h2>
+              </div>
+              <div className="space-y-3">
+                {periods.map((period) => (
+                  <MonthlyPeriodCard
+                    key={period.id}
+                    period={period}
+                    entries={periodEntries[period.id] || []}
+                    hourlyRate={hourlyRate}
+                    currency={currency}
+                    timeFormat={timeFormat}
+                    onAddEntry={(value, hours) => handleAddEntryToPeriod(period.id, value, hours)}
+                    onRemoveEntry={(entryId) => handleRemoveEntryFromPeriod(period.id, entryId)}
+                    onDeletePeriod={handleDeletePeriod}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
       </main>
 
@@ -337,6 +588,13 @@ export function FreelancerCalculator() {
           <p>Track your freelance hours and calculate earnings effortlessly</p>
         </div>
       </footer>
+
+      {/* Close Month Dialog */}
+      <CloseMonthDialog
+        open={showCloseDialog}
+        onOpenChange={setShowCloseDialog}
+        onConfirm={handleCloseMonth}
+      />
     </div>
   );
 }
