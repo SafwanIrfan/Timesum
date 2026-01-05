@@ -14,7 +14,7 @@ import {
 import { useTimer, formatTimerDisplay, secondsToDecimalHours } from '@/hooks/useTimer';
 import { ProjectSelect } from './ProjectSelect';
 import { toast } from '@/hooks/use-toast';
-import { decimalToHHMMSS, formatDecimalHours } from '@/utils/timeUtils';
+import { decimalToHHMMSS } from '@/utils/timeUtils';
 import { cn } from '@/lib/utils';
 
 interface TimerWidgetProps {
@@ -61,7 +61,7 @@ export function TimerWidget({ onSaveTime, projects, onAddProject }: TimerWidgetP
       await onSaveTime(result.decimalHours, displayValue, result.projectLabel || undefined);
       toast({
         title: 'Time saved',
-        description: `Added ${formatDecimalHours(result.decimalHours)} hours${result.projectLabel ? ` to ${result.projectLabel}` : ''}`,
+        description: `Added ${formatTimerDisplay(result.elapsedSeconds)}${result.projectLabel ? ` to ${result.projectLabel}` : ''}`,
       });
     } catch (error) {
       toast({
@@ -131,7 +131,7 @@ export function TimerWidget({ onSaveTime, projects, onAddProject }: TimerWidgetP
       
       toast({
         title: 'Time saved',
-        description: `Added ${formatDecimalHours(decimalHours)} hours${manualProject ? ` to ${manualProject}` : ''}`,
+        description: `Added ${formatTimerDisplay(diffSeconds)}${manualProject ? ` to ${manualProject}` : ''}`,
       });
 
       // Reset form
@@ -182,7 +182,7 @@ export function TimerWidget({ onSaveTime, projects, onAddProject }: TimerWidgetP
             </div>
             {timer.isRunning && (
               <p className="text-sm text-muted-foreground mt-2">
-                {formatDecimalHours(timer.decimalHours)} hours
+                {timer.displayTime}
                 {timer.projectLabel && (
                   <span className="text-primary"> • {timer.projectLabel}</span>
                 )}
@@ -289,7 +289,7 @@ export function TimerWidget({ onSaveTime, projects, onAddProject }: TimerWidgetP
                       endDate.setDate(endDate.getDate() + 1);
                     }
                     const diffSeconds = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
-                    return `${formatTimerDisplay(diffSeconds)} (${formatDecimalHours(secondsToDecimalHours(diffSeconds))} hrs)`;
+                    return formatTimerDisplay(diffSeconds);
                   })()}
                 </span>
               </div>

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { TimeEntry, Currency, TimeFormat } from '@/types/freelancer';
 import { TimeEntryList } from './TimeEntryList';
 import { TimeEntryInput } from './TimeEntryInput';
-import { decimalToHHMMSS, formatDecimalHours, formatCurrency } from '@/utils/timeUtils';
+import { decimalToHHMMSS, formatCurrency } from '@/utils/timeUtils';
 
 interface MonthlyPeriod {
   id: string;
@@ -60,7 +60,7 @@ export function MonthlyPeriodCard({
             <p className="text-xs sm:text-sm text-muted-foreground truncate">
               <span className="hidden sm:inline">{monthNames[period.month - 1]} {period.year} • </span>
               <span className="sm:hidden">{monthNames[period.month - 1].slice(0, 3)} {period.year} • </span>
-              {entries.length} entries • {formatDecimalHours(totalDecimalHours)} hrs • {formatCurrency(totalEarnings, currency.symbol)}
+              {entries.length} entries • {decimalToHHMMSS(totalDecimalHours)} • {formatCurrency(totalEarnings, currency.symbol)}
             </p>
           </div>
         </div>
