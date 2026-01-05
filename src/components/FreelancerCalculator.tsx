@@ -12,6 +12,7 @@ import { MonthlyPeriodCard } from "./MonthlyPeriodCard";
 import { CloseMonthDialog } from "./CloseMonthDialog";
 import { ProjectFilter } from "./ProjectSelect";
 import { TimerWidget } from "./TimerWidget";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Clock, DollarSign, Calculator, Trash2, LogOut, Archive, History } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -37,6 +38,7 @@ export function FreelancerCalculator() {
   const [periods, setPeriods] = useState<MonthlyPeriod[]>([]);
   const [periodEntries, setPeriodEntries] = useState<Record<string, TimeEntry[]>>({});
   const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [showClearAllDialog, setShowClearAllDialog] = useState(false);
   const [projects, setProjects] = useState<string[]>([]);
   const [projectFilter, setProjectFilter] = useState<string>('');
 
@@ -548,7 +550,7 @@ export function FreelancerCalculator() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={handleClearAll}
+                        onClick={() => setShowClearAllDialog(true)}
                         className="text-muted-foreground hover:text-destructive text-xs sm:text-sm"
                       >
                         <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
@@ -668,6 +670,19 @@ export function FreelancerCalculator() {
 
       {/* Close Month Dialog */}
       <CloseMonthDialog open={showCloseDialog} onOpenChange={setShowCloseDialog} onConfirm={handleCloseMonth} />
+
+      {/* Clear All Confirmation */}
+      <ConfirmDialog
+        open={showClearAllDialog}
+        onOpenChange={setShowClearAllDialog}
+        title="Clear All Entries"
+        description={`Are you sure you want to clear all ${entries.length} entries from the current month? This action cannot be undone.`}
+        confirmText="Clear All"
+        onConfirm={() => {
+          handleClearAll();
+          setShowClearAllDialog(false);
+        }}
+      />
     </div>
   );
 }
