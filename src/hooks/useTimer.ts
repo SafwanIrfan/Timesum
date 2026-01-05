@@ -48,13 +48,6 @@ export function useTimer() {
   const isInitializedRef = useRef(false);
   const originalTitleRef = useRef<string>(DEFAULT_TITLE);
 
-  // Capture original title on first render (client-side only)
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      originalTitleRef.current = document.title || DEFAULT_TITLE;
-    }
-  }, []);
-
   // Calculate elapsed seconds from start time
   const calculateElapsed = useCallback((startTime: Date): number => {
     return Math.floor((Date.now() - startTime.getTime()) / 1000);
