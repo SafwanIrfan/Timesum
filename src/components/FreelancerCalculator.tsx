@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { TimeFormat, TimeEntry, Currency, CURRENCIES } from "@/types/freelancer";
 import { decimalToHHMMSS, formatDecimalHours, formatCurrency } from "@/utils/timeUtils";
 import { TimeFormatToggle } from "./TimeFormatToggle";
@@ -10,6 +10,7 @@ import { SummaryCard } from "./SummaryCard";
 import { InvoiceDownload } from "./InvoiceDownload";
 import { MonthlyPeriodCard } from "./MonthlyPeriodCard";
 import { CloseMonthDialog } from "./CloseMonthDialog";
+import { ProjectFilter } from "./ProjectSelect";
 import { Button } from "@/components/ui/button";
 import { Clock, DollarSign, Calculator, Trash2, LogOut, Archive, History } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -35,6 +36,8 @@ export function FreelancerCalculator() {
   const [periods, setPeriods] = useState<MonthlyPeriod[]>([]);
   const [periodEntries, setPeriodEntries] = useState<Record<string, TimeEntry[]>>({});
   const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [projects, setProjects] = useState<string[]>([]);
+  const [projectFilter, setProjectFilter] = useState<string>('');
 
   // Load user's data from database
   useEffect(() => {
@@ -79,6 +82,7 @@ export function FreelancerCalculator() {
         // Separate current entries (no period) from period entries
         const current: TimeEntry[] = [];
         const byPeriod: Record<string, TimeEntry[]> = {};
+        const allProjects = new Set<string>();
 
         entriesData.forEach((entry) => {
           const mappedEntry: TimeEntry = {
@@ -86,7 +90,12 @@ export function FreelancerCalculator() {
             value: entry.value,
             decimalHours: Number(entry.decimal_hours),
             createdAt: new Date(entry.created_at),
+            project: entry.project || undefined,
           };
+
+          if (entry.project) {
+            allProjects.add(entry.project);
+          }
 
           if (entry.period_id) {
             if (!byPeriod[entry.period_id]) {
@@ -100,6 +109,7 @@ export function FreelancerCalculator() {
 
         setEntries(current);
         setPeriodEntries(byPeriod);
+        setProjects(Array.from(allProjects).sort());
       }
       setIsLoading(false);
     };
@@ -144,6 +154,12 @@ export function FreelancerCalculator() {
     return () => clearTimeout(debounce);
   }, [currency, hourlyRate, user, isLoading]);
 
+  // Filtered entries for display
+  const filteredEntries = useMemo(() => {
+    if (!projectFilter) return entries;
+    return entries.filter(e => e.project === projectFilter);
+  }, [entries, projectFilter]);
+
   const totalDecimalHours = entries.reduce((sum, entry) => sum + entry.decimalHours, 0);
   const currentMonthEarnings = totalDecimalHours * (parseFloat(hourlyRate) || 0);
 
@@ -153,7 +169,13 @@ export function FreelancerCalculator() {
     .reduce((sum, entry) => sum + entry.decimalHours, 0);
   const totalEarnings = (totalDecimalHours + allPeriodHours) * (parseFloat(hourlyRate) || 0);
 
-  const handleAddEntry = async (value: string, decimalHours: number) => {
+  const handleAddProject = (project: string) => {
+    if (!projects.includes(project)) {
+      setProjects(prev => [...prev, project].sort());
+    }
+  };
+
+  const handleAddEntry = async (value: string, decimalHours: number, project?: string) => {
     if (!user) return;
 
     const { data, error } = await supabase
@@ -162,6 +184,7 @@ export function FreelancerCalculator() {
         user_id: user.id,
         value,
         decimal_hours: decimalHours,
+        project: project || null,
       })
       .select()
       .single();
@@ -180,11 +203,17 @@ export function FreelancerCalculator() {
       value: data.value,
       decimalHours: Number(data.decimal_hours),
       createdAt: new Date(data.created_at),
+      project: data.project || undefined,
     };
     setEntries((prev) => [newEntry, ...prev]);
+    
+    if (project && !projects.includes(project)) {
+      setProjects(prev => [...prev, project].sort());
+    }
+    
     toast({
       title: "Entry added",
-      description: `Added ${formatDecimalHours(decimalHours)} hours`,
+      description: `Added ${formatDecimalHours(decimalHours)} hours${project ? ` to ${project}` : ''}`,
     });
   };
 
@@ -512,8 +541,22 @@ export function FreelancerCalculator() {
                 </div>
               </div>
               <div className="space-y-4">
-                <TimeEntryInput format={timeFormat} onAdd={handleAddEntry} />
-                <TimeEntryList entries={entries} format={timeFormat} onRemove={handleRemoveEntry} />
+                <TimeEntryInput 
+                  format={timeFormat} 
+                  onAdd={handleAddEntry}
+                  projects={projects}
+                  onAddProject={handleAddProject}
+                />
+                {projects.length > 0 && (
+                  <div className="pt-1">
+                    <ProjectFilter 
+                      value={projectFilter} 
+                      onChange={setProjectFilter} 
+                      projects={projects} 
+                    />
+                  </div>
+                )}
+                <TimeEntryList entries={filteredEntries} format={timeFormat} onRemove={handleRemoveEntry} />
               </div>
             </div>
 

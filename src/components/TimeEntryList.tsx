@@ -1,6 +1,7 @@
 import { TimeEntry, TimeFormat } from '@/types/freelancer';
 import { Button } from '@/components/ui/button';
-import { Trash2, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Trash2, Clock, FolderOpen } from 'lucide-react';
 import { decimalToHHMMSS, formatDecimalHours } from '@/utils/timeUtils';
 
 interface TimeEntryListProps {
@@ -32,13 +33,21 @@ export function TimeEntryList({ entries, format, onRemove }: TimeEntryListProps)
             <span className="text-muted-foreground text-xs sm:text-sm font-mono w-5 sm:w-6 flex-shrink-0">
               #{entries.length - index}
             </span>
-            <div className="flex flex-col min-w-0">
-              <span className="font-medium text-foreground text-sm sm:text-base truncate">
-                {format === 'hh:mm:ss' 
-                  ? decimalToHHMMSS(entry.decimalHours)
-                  : `${formatDecimalHours(entry.decimalHours)} hrs`
-                }
-              </span>
+            <div className="flex flex-col min-w-0 gap-0.5">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-foreground text-sm sm:text-base truncate">
+                  {format === 'hh:mm:ss' 
+                    ? decimalToHHMMSS(entry.decimalHours)
+                    : `${formatDecimalHours(entry.decimalHours)} hrs`
+                  }
+                </span>
+                {entry.project && (
+                  <Badge variant="secondary" className="text-[10px] sm:text-xs gap-1 py-0 h-5">
+                    <FolderOpen className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                    <span className="max-w-[60px] sm:max-w-[100px] truncate">{entry.project}</span>
+                  </Badge>
+                )}
+              </div>
               <span className="text-xs text-muted-foreground truncate">
                 {format === 'hh:mm:ss' 
                   ? `${formatDecimalHours(entry.decimalHours)} decimal hours`

@@ -5,6 +5,7 @@ export interface TimeEntry {
   value: string;
   decimalHours: number;
   createdAt: Date;
+  project?: string;
 }
 
 export interface Currency {
