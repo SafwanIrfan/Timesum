@@ -1,6 +1,6 @@
 import { useRef, useMemo } from 'react';
 import { TimeEntry, Currency } from '@/types/freelancer';
-import { decimalToHHMMSS, formatDecimalHours, formatCurrency } from '@/utils/timeUtils';
+import { decimalToHHMMSS, formatCurrency } from '@/utils/timeUtils';
 import { Button } from '@/components/ui/button';
 import { FileDown } from 'lucide-react';
 import {
@@ -243,7 +243,7 @@ export function InvoiceDownload({
               <div class="project-group">
                 <div class="project-header">
                   <span class="project-name">${group.project}</span>
-                  <span class="project-total">${formatDecimalHours(group.totalHours)} hrs • ${formatCurrency(group.totalAmount, currency.symbol)}</span>
+                  <span class="project-total">${decimalToHHMMSS(group.totalHours)} • ${formatCurrency(group.totalAmount, currency.symbol)}</span>
                 </div>
                 <table>
                   <thead>
@@ -259,7 +259,7 @@ export function InvoiceDownload({
                       <tr>
                         <td>${entry.createdAt.toLocaleDateString()}</td>
                         <td>${entry.value}</td>
-                        <td class="text-right">${formatDecimalHours(entry.decimalHours)}</td>
+                        <td class="text-right">${decimalToHHMMSS(entry.decimalHours)}</td>
                         <td class="text-right">${formatCurrency(entry.decimalHours * rate, currency.symbol)}</td>
                       </tr>
                     `).join('')}
@@ -274,10 +274,6 @@ export function InvoiceDownload({
               <tr>
                 <td>Total Hours</td>
                 <td class="text-right">${decimalToHHMMSS(totalDecimalHours)}</td>
-              </tr>
-              <tr>
-                <td>Decimal Hours</td>
-                <td class="text-right">${formatDecimalHours(totalDecimalHours)} hrs</td>
               </tr>
               <tr>
                 <td>Hourly Rate</td>
@@ -348,7 +344,7 @@ export function InvoiceDownload({
                 {projectGroups.map(group => (
                   <div key={group.project} className="flex justify-between py-1 text-sm border-b border-border/50">
                     <span className="text-muted-foreground truncate max-w-[60%]">{group.project}</span>
-                    <span className="font-medium">{formatDecimalHours(group.totalHours)} hrs</span>
+                    <span className="font-medium font-mono">{decimalToHHMMSS(group.totalHours)}</span>
                   </div>
                 ))}
               </div>

@@ -1,16 +1,16 @@
-import { TimeEntry, TimeFormat } from '@/types/freelancer';
+import { TimeEntry } from '@/types/freelancer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Clock, FolderOpen } from 'lucide-react';
-import { decimalToHHMMSS, formatDecimalHours } from '@/utils/timeUtils';
+import { decimalToHHMMSS } from '@/utils/timeUtils';
 
 interface TimeEntryListProps {
   entries: TimeEntry[];
-  format: TimeFormat;
+  format?: string; // kept for compatibility but not used
   onRemove: (id: string) => void;
 }
 
-export function TimeEntryList({ entries, format, onRemove }: TimeEntryListProps) {
+export function TimeEntryList({ entries, onRemove }: TimeEntryListProps) {
   if (entries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-muted-foreground">
@@ -35,11 +35,8 @@ export function TimeEntryList({ entries, format, onRemove }: TimeEntryListProps)
             </span>
             <div className="flex flex-col min-w-0 gap-0.5">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-foreground text-sm sm:text-base truncate">
-                  {format === 'hh:mm:ss' 
-                    ? decimalToHHMMSS(entry.decimalHours)
-                    : `${formatDecimalHours(entry.decimalHours)} hrs`
-                  }
+                <span className="font-medium text-foreground text-sm sm:text-base truncate font-mono">
+                  {decimalToHHMMSS(entry.decimalHours)}
                 </span>
                 {entry.project && (
                   <Badge variant="secondary" className="text-[10px] sm:text-xs gap-1 py-0 h-5">
@@ -49,10 +46,7 @@ export function TimeEntryList({ entries, format, onRemove }: TimeEntryListProps)
                 )}
               </div>
               <span className="text-xs text-muted-foreground truncate">
-                {format === 'hh:mm:ss' 
-                  ? `${formatDecimalHours(entry.decimalHours)} decimal hours`
-                  : decimalToHHMMSS(entry.decimalHours)
-                }
+                {entry.value}
               </span>
             </div>
           </div>

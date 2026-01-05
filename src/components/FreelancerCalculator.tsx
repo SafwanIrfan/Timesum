@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { TimeFormat, TimeEntry, Currency, CURRENCIES } from "@/types/freelancer";
-import { decimalToHHMMSS, formatDecimalHours, formatCurrency } from "@/utils/timeUtils";
+import { decimalToHHMMSS, formatCurrency } from "@/utils/timeUtils";
 
 import { TimeEntryInput } from "./TimeEntryInput";
 import { TimeEntryList } from "./TimeEntryList";
@@ -260,7 +260,7 @@ export function FreelancerCalculator() {
 
     toast({
       title: "Entry added",
-      description: `Added ${formatDecimalHours(decimalHours)} hours`,
+      description: `Added ${decimalToHHMMSS(decimalHours)}`,
     });
   };
 
@@ -483,7 +483,7 @@ export function FreelancerCalculator() {
             <SummaryCard
               title="Current Month Hours"
               value={decimalToHHMMSS(totalDecimalHours)}
-              subtitle={`${formatDecimalHours(totalDecimalHours)} decimal hours`}
+              subtitle={`${entries.length} entries logged`}
               icon={<Clock className="w-6 h-6" />}
               variant="default"
             />
@@ -565,7 +565,7 @@ export function FreelancerCalculator() {
                     await handleAddEntry(value, decimalHours, project);
                     toast({
                       title: "Entry added",
-                      description: `Added ${formatDecimalHours(decimalHours)} hours${project ? ` to ${project}` : ''}`,
+                      description: `Added ${decimalToHHMMSS(decimalHours)}${project ? ` to ${project}` : ''}`,
                     });
                   }}
                   projects={projects}
@@ -609,7 +609,7 @@ export function FreelancerCalculator() {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Hours worked</span>
-                        <span className="font-medium">{formatDecimalHours(totalDecimalHours)} hrs</span>
+                        <span className="font-medium">{decimalToHHMMSS(totalDecimalHours)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Rate</span>
