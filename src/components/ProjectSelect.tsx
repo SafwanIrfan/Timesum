@@ -9,6 +9,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { FolderOpen, Plus, X, Check, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ConfirmDialog } from './ConfirmDialog';
 
 interface ProjectSelectProps {
   value: string;
@@ -128,39 +129,59 @@ interface ProjectFilterProps {
 }
 
 export function ProjectFilter({ value, onChange, projects, onDeleteProject }: ProjectFilterProps) {
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget && onDeleteProject) {
+      onDeleteProject(deleteTarget);
+      setDeleteTarget(null);
+    }
+  };
+
   if (projects.length === 0) return null;
 
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
-      <Badge
-        variant={value === '' ? 'default' : 'outline'}
-        className="cursor-pointer text-xs"
-        onClick={() => onChange('')}
-      >
-        All
-      </Badge>
-      {projects.map((project) => (
+    <>
+      <div className="flex items-center gap-1.5 flex-wrap">
         <Badge
-          key={project}
-          variant={value === project ? 'default' : 'outline'}
-          className="cursor-pointer text-xs group relative pr-6"
-          onClick={() => onChange(project)}
+          variant={value === '' ? 'default' : 'outline'}
+          className="cursor-pointer text-xs"
+          onClick={() => onChange('')}
         >
-          {project}
-          {onDeleteProject && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteProject(project);
-              }}
-              className="absolute right-1 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100 hover:text-destructive transition-opacity"
-              title={`Delete ${project}`}
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
-          )}
+          All
         </Badge>
-      ))}
-    </div>
+        {projects.map((project) => (
+          <Badge
+            key={project}
+            variant={value === project ? 'default' : 'outline'}
+            className="cursor-pointer text-xs group relative pr-6"
+            onClick={() => onChange(project)}
+          >
+            {project}
+            {onDeleteProject && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeleteTarget(project);
+                }}
+                className="absolute right-1 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100 hover:text-destructive transition-opacity"
+                title={`Delete ${project}`}
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
+          </Badge>
+        ))}
+      </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete Project"
+        description={`Are you sure you want to delete "${deleteTarget}"? This will only remove the project folder, not the time entries.`}
+        confirmText="Delete"
+        onConfirm={handleConfirmDelete}
+      />
+    </>
   );
 }
