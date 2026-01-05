@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { TimeEntry, Currency } from '@/types/freelancer';
 import { decimalToHHMMSS, formatDecimalHours, formatCurrency } from '@/utils/timeUtils';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,13 @@ interface InvoiceDownloadProps {
   userName?: string;
 }
 
+interface ProjectGroup {
+  project: string;
+  entries: TimeEntry[];
+  totalHours: number;
+  totalAmount: number;
+}
+
 export function InvoiceDownload({
   entries,
   hourlyRate,
@@ -30,19 +37,51 @@ export function InvoiceDownload({
 }: InvoiceDownloadProps) {
   const invoiceRef = useRef<HTMLDivElement>(null);
 
+  // Group entries by project
+  const projectGroups = useMemo((): ProjectGroup[] => {
+    const groups: Record<string, TimeEntry[]> = {};
+    const rate = parseFloat(hourlyRate) || 0;
+    
+    entries.forEach(entry => {
+      const projectKey = entry.project || 'No Project';
+      if (!groups[projectKey]) {
+        groups[projectKey] = [];
+      }
+      groups[projectKey].push(entry);
+    });
+
+    return Object.entries(groups)
+      .map(([project, projectEntries]) => {
+        const totalHours = projectEntries.reduce((sum, e) => sum + e.decimalHours, 0);
+        return {
+          project,
+          entries: projectEntries,
+          totalHours,
+          totalAmount: totalHours * rate,
+        };
+      })
+      .sort((a, b) => b.totalHours - a.totalHours);
+  }, [entries, hourlyRate]);
+
   const handleDownload = () => {
     if (!invoiceRef.current) return;
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    const invoiceDate = new Date().toLocaleDateString('en-US', {
+    const now = new Date();
+    const invoiceMonth = now.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+    });
+    const invoiceDate = now.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     });
 
     const invoiceNumber = `INV-${Date.now().toString(36).toUpperCase()}`;
+    const rate = parseFloat(hourlyRate) || 0;
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -74,6 +113,11 @@ export function InvoiceDownload({
               font-weight: 700;
               color: #0d9488;
             }
+            .invoice-period {
+              font-size: 18px;
+              color: #475569;
+              margin-top: 8px;
+            }
             .invoice-meta {
               text-align: right;
             }
@@ -96,41 +140,75 @@ export function InvoiceDownload({
               letter-spacing: 0.5px;
               margin-bottom: 10px;
             }
+            .project-group {
+              margin-bottom: 24px;
+              border: 1px solid #e2e8f0;
+              border-radius: 8px;
+              overflow: hidden;
+            }
+            .project-header {
+              background: #f8fafc;
+              padding: 12px 16px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              border-bottom: 1px solid #e2e8f0;
+            }
+            .project-name {
+              font-weight: 600;
+              color: #334155;
+              font-size: 15px;
+            }
+            .project-total {
+              font-weight: 600;
+              color: #0d9488;
+            }
             table {
               width: 100%;
               border-collapse: collapse;
-              margin-bottom: 20px;
             }
             th {
               background: #f1f5f9;
-              padding: 12px 16px;
+              padding: 10px 16px;
               text-align: left;
               font-weight: 600;
               color: #475569;
-              font-size: 13px;
+              font-size: 12px;
               text-transform: uppercase;
               letter-spacing: 0.5px;
             }
             td {
-              padding: 12px 16px;
+              padding: 10px 16px;
               border-bottom: 1px solid #e2e8f0;
               color: #334155;
+              font-size: 13px;
+            }
+            tr:last-child td {
+              border-bottom: none;
             }
             .text-right {
               text-align: right;
             }
             .summary-table {
-              width: 300px;
+              width: 320px;
               margin-left: auto;
+              border: 1px solid #e2e8f0;
+              border-radius: 8px;
+              overflow: hidden;
             }
             .summary-table td {
-              padding: 8px 16px;
+              padding: 10px 16px;
+              background: #f8fafc;
             }
             .summary-total {
-              font-size: 18px;
+              font-size: 16px;
               font-weight: 700;
               color: #0d9488;
               border-top: 2px solid #0d9488;
+            }
+            .summary-total td {
+              background: #fff;
+              padding: 14px 16px;
             }
             .footer {
               margin-top: 60px;
@@ -150,7 +228,8 @@ export function InvoiceDownload({
           <div class="invoice-header">
             <div>
               <h1 class="invoice-title">INVOICE</h1>
-              ${userName ? `<p style="margin-top: 8px; font-size: 16px; color: #334155;"><strong>From:</strong> ${userName}</p>` : ''}
+              <p class="invoice-period">${invoiceMonth}</p>
+              ${userName ? `<p style="margin-top: 8px; font-size: 14px; color: #334155;"><strong>From:</strong> ${userName}</p>` : ''}
             </div>
             <div class="invoice-meta">
               <p class="invoice-number">${invoiceNumber}</p>
@@ -159,27 +238,35 @@ export function InvoiceDownload({
           </div>
 
           <div class="section">
-            <h2 class="section-title">Time Entries</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Date Added</th>
-                  <th>Time Entry</th>
-                  <th class="text-right">Hours (Decimal)</th>
-                  <th class="text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${entries.map(entry => `
-                  <tr>
-                    <td>${entry.createdAt.toLocaleDateString()}</td>
-                    <td>${entry.value}</td>
-                    <td class="text-right">${formatDecimalHours(entry.decimalHours)}</td>
-                    <td class="text-right">${formatCurrency(entry.decimalHours * (parseFloat(hourlyRate) || 0), currency.symbol)}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
+            <h2 class="section-title">Time Entries by Project</h2>
+            ${projectGroups.map(group => `
+              <div class="project-group">
+                <div class="project-header">
+                  <span class="project-name">${group.project}</span>
+                  <span class="project-total">${formatDecimalHours(group.totalHours)} hrs • ${formatCurrency(group.totalAmount, currency.symbol)}</span>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Time Entry</th>
+                      <th class="text-right">Hours</th>
+                      <th class="text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${group.entries.map(entry => `
+                      <tr>
+                        <td>${entry.createdAt.toLocaleDateString()}</td>
+                        <td>${entry.value}</td>
+                        <td class="text-right">${formatDecimalHours(entry.decimalHours)}</td>
+                        <td class="text-right">${formatCurrency(entry.decimalHours * rate, currency.symbol)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `).join('')}
           </div>
 
           <div class="section">
@@ -194,7 +281,7 @@ export function InvoiceDownload({
               </tr>
               <tr>
                 <td>Hourly Rate</td>
-                <td class="text-right">${formatCurrency(parseFloat(hourlyRate) || 0, currency.symbol)}</td>
+                <td class="text-right">${formatCurrency(rate, currency.symbol)}</td>
               </tr>
               <tr class="summary-total">
                 <td><strong>Total Due</strong></td>
@@ -243,22 +330,36 @@ export function InvoiceDownload({
         <div ref={invoiceRef} className="p-4 border border-border rounded-lg bg-background">
           <div className="space-y-4">
             <div className="flex justify-between items-start">
-              <h3 className="text-lg font-bold text-primary">Invoice Preview</h3>
+              <div>
+                <h3 className="text-lg font-bold text-primary">Invoice Preview</h3>
+                <p className="text-xs text-muted-foreground">
+                  {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                </p>
+              </div>
               <span className="text-sm text-muted-foreground">
                 {new Date().toLocaleDateString()}
               </span>
             </div>
             
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between py-1 border-b border-border">
-                <span className="text-muted-foreground">Time Entries</span>
-                <span className="font-medium">{entries.length}</span>
+            {/* Project breakdown preview */}
+            {projectGroups.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground">By Project</p>
+                {projectGroups.map(group => (
+                  <div key={group.project} className="flex justify-between py-1 text-sm border-b border-border/50">
+                    <span className="text-muted-foreground truncate max-w-[60%]">{group.project}</span>
+                    <span className="font-medium">{formatDecimalHours(group.totalHours)} hrs</span>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between py-1 border-b border-border">
+            )}
+            
+            <div className="space-y-2 text-sm pt-2 border-t border-border">
+              <div className="flex justify-between py-1">
                 <span className="text-muted-foreground">Total Hours</span>
                 <span className="font-medium">{decimalToHHMMSS(totalDecimalHours)}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-border">
+              <div className="flex justify-between py-1">
                 <span className="text-muted-foreground">Hourly Rate</span>
                 <span className="font-medium">{formatCurrency(parseFloat(hourlyRate) || 0, currency.symbol)}</span>
               </div>

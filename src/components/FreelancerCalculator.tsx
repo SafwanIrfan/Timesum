@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { TimeFormat, TimeEntry, Currency, CURRENCIES } from "@/types/freelancer";
 import { decimalToHHMMSS, formatDecimalHours, formatCurrency } from "@/utils/timeUtils";
-import { TimeFormatToggle } from "./TimeFormatToggle";
+
 import { TimeEntryInput } from "./TimeEntryInput";
 import { TimeEntryList } from "./TimeEntryList";
 import { CurrencySelect } from "./CurrencySelect";
@@ -164,16 +164,21 @@ export function FreelancerCalculator() {
   const totalDecimalHours = entries.reduce((sum, entry) => sum + entry.decimalHours, 0);
   const currentMonthEarnings = totalDecimalHours * (parseFloat(hourlyRate) || 0);
 
-  // Calculate total earnings across all periods
-  const allPeriodHours = Object.values(periodEntries)
-    .flat()
-    .reduce((sum, entry) => sum + entry.decimalHours, 0);
-  const totalEarnings = (totalDecimalHours + allPeriodHours) * (parseFloat(hourlyRate) || 0);
-
   const handleAddProject = (project: string) => {
     if (!projects.includes(project)) {
       setProjects(prev => [...prev, project].sort());
     }
+  };
+
+  const handleDeleteProject = (project: string) => {
+    setProjects(prev => prev.filter(p => p !== project));
+    if (projectFilter === project) {
+      setProjectFilter('');
+    }
+    toast({
+      title: "Project deleted",
+      description: `"${project}" has been removed`,
+    });
   };
 
   const handleAddEntry = async (value: string, decimalHours: number, project?: string) => {
@@ -437,11 +442,10 @@ export function FreelancerCalculator() {
                   hourlyRate={hourlyRate}
                   currency={currency}
                   totalDecimalHours={totalDecimalHours}
-                  totalEarnings={totalEarnings}
+                  totalEarnings={currentMonthEarnings}
                   userName={user?.user_metadata?.full_name}
                 />
               </div>
-              <TimeFormatToggle value={timeFormat} onChange={setTimeFormat} />
               <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign out" className="h-8 w-8 sm:h-9 sm:w-9">
                 <LogOut className="w-4 h-4" />
               </Button>
@@ -454,7 +458,7 @@ export function FreelancerCalculator() {
               hourlyRate={hourlyRate}
               currency={currency}
               totalDecimalHours={totalDecimalHours}
-              totalEarnings={totalEarnings}
+              totalEarnings={currentMonthEarnings}
               userName={user?.user_metadata?.full_name}
             />
           </div>
@@ -498,9 +502,9 @@ export function FreelancerCalculator() {
               variant="default"
             />
             <SummaryCard
-              title="Total Earnings"
-              value={formatCurrency(totalEarnings, currency.symbol)}
-              subtitle={`(${periods.length + 1} months)`}
+              title="Monthly Total"
+              value={formatCurrency(currentMonthEarnings, currency.symbol)}
+              subtitle="current period"
               icon={<Calculator className="w-6 h-6" />}
               variant="primary"
             />
@@ -573,7 +577,8 @@ export function FreelancerCalculator() {
                     <ProjectFilter 
                       value={projectFilter} 
                       onChange={setProjectFilter} 
-                      projects={projects} 
+                      projects={projects}
+                      onDeleteProject={handleDeleteProject}
                     />
                   </div>
                 )}
@@ -616,7 +621,7 @@ export function FreelancerCalculator() {
                         <div className="flex justify-between">
                           <span className="font-medium text-foreground">Total</span>
                           <span className="font-bold text-primary">
-                            {formatCurrency(totalEarnings, currency.symbol)}
+                            {formatCurrency(currentMonthEarnings, currency.symbol)}
                           </span>
                         </div>
                       </div>

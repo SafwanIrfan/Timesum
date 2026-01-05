@@ -60,16 +60,46 @@ export function useTimer() {
     return Math.floor((Date.now() - startTime.getTime()) / 1000);
   }, []);
 
-  // Update tab title with timer
+  // Update tab title and favicon with timer
   const updateTabTitle = useCallback((elapsed: number, isRunning: boolean, projectLabel?: string) => {
     if (typeof document === 'undefined') return;
+    
+    // Update favicon
+    const favicon = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
     
     if (isRunning) {
       const timeStr = formatTimerDisplay(elapsed);
       const projectStr = projectLabel ? ` - ${projectLabel}` : '';
       document.title = `⏱️ ${timeStr}${projectStr} | Timesum`;
+      
+      // Set timer favicon (red circle to indicate recording)
+      if (favicon) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          // Draw a red recording indicator
+          ctx.fillStyle = '#ef4444';
+          ctx.beginPath();
+          ctx.arc(16, 16, 14, 0, 2 * Math.PI);
+          ctx.fill();
+          
+          // Draw inner white circle
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(16, 16, 6, 0, 2 * Math.PI);
+          ctx.fill();
+          
+          favicon.href = canvas.toDataURL('image/png');
+        }
+      }
     } else {
       document.title = originalTitleRef.current;
+      // Reset to original favicon
+      if (favicon) {
+        favicon.href = '/favicon.png';
+      }
     }
   }, []);
 

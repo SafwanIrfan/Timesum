@@ -7,7 +7,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { FolderOpen, Plus, X, Check } from 'lucide-react';
+import { FolderOpen, Plus, X, Check, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ProjectSelectProps {
@@ -124,9 +124,10 @@ interface ProjectFilterProps {
   value: string;
   onChange: (value: string) => void;
   projects: string[];
+  onDeleteProject?: (project: string) => void;
 }
 
-export function ProjectFilter({ value, onChange, projects }: ProjectFilterProps) {
+export function ProjectFilter({ value, onChange, projects, onDeleteProject }: ProjectFilterProps) {
   if (projects.length === 0) return null;
 
   return (
@@ -142,10 +143,22 @@ export function ProjectFilter({ value, onChange, projects }: ProjectFilterProps)
         <Badge
           key={project}
           variant={value === project ? 'default' : 'outline'}
-          className="cursor-pointer text-xs"
+          className="cursor-pointer text-xs group relative pr-6"
           onClick={() => onChange(project)}
         >
           {project}
+          {onDeleteProject && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteProject(project);
+              }}
+              className="absolute right-1 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100 hover:text-destructive transition-opacity"
+              title={`Delete ${project}`}
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          )}
         </Badge>
       ))}
     </div>
