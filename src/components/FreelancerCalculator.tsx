@@ -11,6 +11,7 @@ import { InvoiceDownload } from "./InvoiceDownload";
 import { MonthlyPeriodCard } from "./MonthlyPeriodCard";
 import { CloseMonthDialog } from "./CloseMonthDialog";
 import { ProjectFilter } from "./ProjectSelect";
+import { TimerWidget } from "./TimerWidget";
 import { Button } from "@/components/ui/button";
 import { Clock, DollarSign, Calculator, Trash2, LogOut, Archive, History } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -195,7 +196,7 @@ export function FreelancerCalculator() {
         description: error.message,
         variant: "destructive",
       });
-      return;
+      throw error;
     }
 
     const newEntry: TimeEntry = {
@@ -210,11 +211,11 @@ export function FreelancerCalculator() {
     if (project && !projects.includes(project)) {
       setProjects(prev => [...prev, project].sort());
     }
-    
-    toast({
-      title: "Entry added",
-      description: `Added ${formatDecimalHours(decimalHours)} hours${project ? ` to ${project}` : ''}`,
-    });
+  };
+
+  // Handler for timer widget - saves time and shows toast
+  const handleTimerSave = async (decimalHours: number, displayValue: string, project?: string) => {
+    await handleAddEntry(displayValue, decimalHours, project);
   };
 
   const handleAddEntryToPeriod = async (periodId: string, value: string, decimalHours: number) => {
@@ -505,15 +506,28 @@ export function FreelancerCalculator() {
             />
           </div>
 
+          {/* Timer Widget - Main Feature */}
+          <div className="animate-slide-up" style={{ animationDelay: "100ms" }}>
+            <h2 className="text-base sm:text-lg font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-primary" />
+              Track Your Time
+            </h2>
+            <TimerWidget
+              onSaveTime={handleTimerSave}
+              projects={projects}
+              onAddProject={handleAddProject}
+            />
+          </div>
+
           {/* Input Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Time Entries Card */}
             <div
               className="bg-card rounded-xl border border-border p-4 sm:p-6 shadow-sm animate-slide-up"
-              style={{ animationDelay: "100ms" }}
+              style={{ animationDelay: "200ms" }}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4">
-                <h2 className="text-base sm:text-lg font-display font-semibold text-foreground">Current Month</h2>
+                <h2 className="text-base sm:text-lg font-display font-semibold text-foreground">Current Month Entries</h2>
                 <div className="flex items-center gap-2">
                   {entries.length > 0 && (
                     <>
@@ -543,9 +557,16 @@ export function FreelancerCalculator() {
               <div className="space-y-4">
                 <TimeEntryInput 
                   format={timeFormat} 
-                  onAdd={handleAddEntry}
+                  onAdd={async (value, decimalHours, project) => {
+                    await handleAddEntry(value, decimalHours, project);
+                    toast({
+                      title: "Entry added",
+                      description: `Added ${formatDecimalHours(decimalHours)} hours${project ? ` to ${project}` : ''}`,
+                    });
+                  }}
                   projects={projects}
                   onAddProject={handleAddProject}
+                  showProjectSelect={true}
                 />
                 {projects.length > 0 && (
                   <div className="pt-1">
@@ -563,7 +584,7 @@ export function FreelancerCalculator() {
             {/* Rate & Currency Card */}
             <div
               className="bg-card rounded-xl border border-border p-4 sm:p-6 shadow-sm animate-slide-up"
-              style={{ animationDelay: "200ms" }}
+              style={{ animationDelay: "300ms" }}
             >
               <h2 className="text-base sm:text-lg font-display font-semibold text-foreground mb-4">Rate & Currency</h2>
               <div className="space-y-4">
@@ -608,7 +629,7 @@ export function FreelancerCalculator() {
 
           {/* Monthly History */}
           {periods.length > 0 && (
-            <div className="animate-slide-up" style={{ animationDelay: "300ms" }}>
+            <div className="animate-slide-up" style={{ animationDelay: "400ms" }}>
               <div className="flex items-center gap-2 mb-3 sm:mb-4">
                 <History className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                 <h2 className="text-base sm:text-lg font-display font-semibold text-foreground">Monthly History</h2>
