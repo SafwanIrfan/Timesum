@@ -53,17 +53,17 @@ export function TimeEntryInput({ format, onAdd }: TimeEntryInputProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-3">
+    <form onSubmit={handleSubmit} className="flex gap-2 sm:gap-3">
       <Input
         type="text"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         placeholder={format === 'hh:mm:ss' ? 'e.g., 2:30:00' : 'e.g., 2.5'}
-        className="flex-1 bg-card border-border h-12 text-base"
+        className="flex-1 bg-card border-border h-10 sm:h-12 text-sm sm:text-base"
       />
-      <Button type="submit" variant="gradient" size="lg" className="gap-2">
-        <Plus className="w-5 h-5" />
-        Add
+      <Button type="submit" variant="gradient" size="lg" className="gap-1.5 sm:gap-2 h-10 sm:h-12 px-3 sm:px-4">
+        <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+        <span className="hidden xs:inline">Add</span>
       </Button>
     </form>
   );

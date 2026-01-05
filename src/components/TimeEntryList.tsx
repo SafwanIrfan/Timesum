@@ -12,10 +12,10 @@ interface TimeEntryListProps {
 export function TimeEntryList({ entries, format, onRemove }: TimeEntryListProps) {
   if (entries.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <Clock className="w-12 h-12 mb-3 opacity-50" />
-        <p className="text-base">No time entries yet</p>
-        <p className="text-sm">Add your first entry above</p>
+      <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-muted-foreground">
+        <Clock className="w-10 h-10 sm:w-12 sm:h-12 mb-2 sm:mb-3 opacity-50" />
+        <p className="text-sm sm:text-base">No time entries yet</p>
+        <p className="text-xs sm:text-sm">Add your first entry above</p>
       </div>
     );
   }
@@ -25,21 +25,21 @@ export function TimeEntryList({ entries, format, onRemove }: TimeEntryListProps)
       {entries.map((entry, index) => (
         <div
           key={entry.id}
-          className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg group animate-scale-in"
+          className="flex items-center justify-between p-2.5 sm:p-3 bg-secondary/50 rounded-lg group animate-scale-in"
           style={{ animationDelay: `${index * 50}ms` }}
         >
-          <div className="flex items-center gap-4">
-            <span className="text-muted-foreground text-sm font-mono w-6">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+            <span className="text-muted-foreground text-xs sm:text-sm font-mono w-5 sm:w-6 flex-shrink-0">
               #{entries.length - index}
             </span>
-            <div className="flex flex-col">
-              <span className="font-medium text-foreground">
+            <div className="flex flex-col min-w-0">
+              <span className="font-medium text-foreground text-sm sm:text-base truncate">
                 {format === 'hh:mm:ss' 
                   ? decimalToHHMMSS(entry.decimalHours)
                   : `${formatDecimalHours(entry.decimalHours)} hrs`
                 }
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground truncate">
                 {format === 'hh:mm:ss' 
                   ? `${formatDecimalHours(entry.decimalHours)} decimal hours`
                   : decimalToHHMMSS(entry.decimalHours)
@@ -51,7 +51,7 @@ export function TimeEntryList({ entries, format, onRemove }: TimeEntryListProps)
             variant="ghost"
             size="icon"
             onClick={() => onRemove(entry.id)}
-            className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+            className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive h-8 w-8 flex-shrink-0"
           >
             <Trash2 className="w-4 h-4" />
           </Button>

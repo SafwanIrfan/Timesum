@@ -397,30 +397,43 @@ export function FreelancerCalculator() {
     <div className="min-h-screen bg-gradient-hero">
       {/* Header */}
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <img src={logo} alt="Timesum" className="h-16 w-auto" />
-            <div className="flex items-center gap-3">
-              <InvoiceDownload
-                entries={entries}
-                hourlyRate={hourlyRate}
-                currency={currency}
-                totalDecimalHours={totalDecimalHours}
-                totalEarnings={totalEarnings}
-                userName={user?.user_metadata?.full_name}
-              />
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <img src={logo} alt="Timesum" className="h-10 sm:h-12 md:h-16 w-auto" />
+            <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+              <div className="hidden sm:block">
+                <InvoiceDownload
+                  entries={entries}
+                  hourlyRate={hourlyRate}
+                  currency={currency}
+                  totalDecimalHours={totalDecimalHours}
+                  totalEarnings={totalEarnings}
+                  userName={user?.user_metadata?.full_name}
+                />
+              </div>
               <TimeFormatToggle value={timeFormat} onChange={setTimeFormat} />
-              <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign out">
+              <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign out" className="h-8 w-8 sm:h-9 sm:w-9">
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
+          </div>
+          {/* Mobile Invoice Download */}
+          <div className="sm:hidden mt-2">
+            <InvoiceDownload
+              entries={entries}
+              hourlyRate={hourlyRate}
+              currency={currency}
+              totalDecimalHours={totalDecimalHours}
+              totalEarnings={totalEarnings}
+              userName={user?.user_metadata?.full_name}
+            />
           </div>
         </div>
       </header>
 
       {/* Hero Greeting */}
-      <div className="container mx-auto px-4 pt-8">
-        <h1 className="text-3xl md:text-4xl font-display font-bold">
+      <div className="container mx-auto px-3 sm:px-4 pt-4 sm:pt-6 md:pt-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold">
           <span className="text-foreground">Hey </span>
           <span className="text-primary">
             {user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0]}
@@ -429,10 +442,10 @@ export function FreelancerCalculator() {
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 md:space-y-8">
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 animate-fade-in">
             <SummaryCard
               title="Current Month Hours"
               value={decimalToHHMMSS(totalDecimalHours)}
@@ -464,14 +477,14 @@ export function FreelancerCalculator() {
           </div>
 
           {/* Input Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Time Entries Card */}
             <div
-              className="bg-card rounded-xl border border-border p-6 shadow-sm animate-slide-up"
+              className="bg-card rounded-xl border border-border p-4 sm:p-6 shadow-sm animate-slide-up"
               style={{ animationDelay: "100ms" }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-display font-semibold text-foreground">Current Month</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4">
+                <h2 className="text-base sm:text-lg font-display font-semibold text-foreground">Current Month</h2>
                 <div className="flex items-center gap-2">
                   {entries.length > 0 && (
                     <>
@@ -479,18 +492,19 @@ export function FreelancerCalculator() {
                         variant="outline"
                         size="sm"
                         onClick={() => setShowCloseDialog(true)}
-                        className="text-primary border-primary/50 hover:bg-primary/10"
+                        className="text-primary border-primary/50 hover:bg-primary/10 text-xs sm:text-sm"
                       >
-                        <Archive className="w-4 h-4 mr-1" />
-                        Close Month
+                        <Archive className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
+                        <span className="hidden xs:inline">Close Month</span>
+                        <span className="xs:hidden">Close</span>
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={handleClearAll}
-                        className="text-muted-foreground hover:text-destructive"
+                        className="text-muted-foreground hover:text-destructive text-xs sm:text-sm"
                       >
-                        <Trash2 className="w-4 h-4 mr-1" />
+                        <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
                         Clear
                       </Button>
                     </>
@@ -505,10 +519,10 @@ export function FreelancerCalculator() {
 
             {/* Rate & Currency Card */}
             <div
-              className="bg-card rounded-xl border border-border p-6 shadow-sm animate-slide-up"
+              className="bg-card rounded-xl border border-border p-4 sm:p-6 shadow-sm animate-slide-up"
               style={{ animationDelay: "200ms" }}
             >
-              <h2 className="text-lg font-display font-semibold text-foreground mb-4">Rate & Currency</h2>
+              <h2 className="text-base sm:text-lg font-display font-semibold text-foreground mb-4">Rate & Currency</h2>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-muted-foreground mb-2">Hourly Rate</label>
@@ -552,9 +566,9 @@ export function FreelancerCalculator() {
           {/* Monthly History */}
           {periods.length > 0 && (
             <div className="animate-slide-up" style={{ animationDelay: "300ms" }}>
-              <div className="flex items-center gap-2 mb-4">
-                <History className="w-5 h-5 text-muted-foreground" />
-                <h2 className="text-lg font-display font-semibold text-foreground">Monthly History</h2>
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <History className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+                <h2 className="text-base sm:text-lg font-display font-semibold text-foreground">Monthly History</h2>
               </div>
               <div className="space-y-3">
                 {periods.map((period) => (
@@ -577,8 +591,8 @@ export function FreelancerCalculator() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 mt-auto py-6">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+      <footer className="border-t border-border/50 mt-auto py-4 sm:py-6">
+        <div className="container mx-auto px-3 sm:px-4 text-center text-xs sm:text-sm text-muted-foreground">
           <p>Track your freelance hours and calculate earnings effortlessly</p>
         </div>
       </footer>
