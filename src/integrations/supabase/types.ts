@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      monthly_periods: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          id: string
+          is_closed: boolean
+          month: number
+          name: string
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          is_closed?: boolean
+          month: number
+          name: string
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          is_closed?: boolean
+          month?: number
+          name?: string
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -50,6 +86,7 @@ export type Database = {
           decimal_hours: number
           description: string | null
           id: string
+          period_id: string | null
           user_id: string
           value: string
         }
@@ -58,6 +95,7 @@ export type Database = {
           decimal_hours: number
           description?: string | null
           id?: string
+          period_id?: string | null
           user_id: string
           value: string
         }
@@ -66,10 +104,19 @@ export type Database = {
           decimal_hours?: number
           description?: string | null
           id?: string
+          period_id?: string | null
           user_id?: string
           value?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "time_entries_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_periods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
