@@ -1,12 +1,7 @@
-import { TimeFormat } from '@/types/freelancer';
-import { cn } from '@/lib/utils';
-import { Clock, Hash } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { TimeFormat } from "@/types/freelancer";
+import { cn } from "@/lib/utils";
+import { Clock, Hash } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TimeFormatToggleProps {
   value: TimeFormat;
@@ -20,12 +15,12 @@ export function TimeFormatToggle({ value, onChange }: TimeFormatToggleProps) {
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              onClick={() => onChange('hh:mm:ss')}
+              onClick={() => onChange("hh:mm:ss")}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                value === 'hh:mm:ss'
+                value === "hh:mm:ss"
                   ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <Clock className="w-4 h-4" />
@@ -33,18 +28,18 @@ export function TimeFormatToggle({ value, onChange }: TimeFormatToggleProps) {
             </button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Example: 02:34:10</p>
+            <p>02:23:30</p>
           </TooltipContent>
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              onClick={() => onChange('decimal')}
+              onClick={() => onChange("decimal")}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                value === 'decimal'
+                value === "decimal"
                   ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <Hash className="w-4 h-4" />
@@ -52,7 +47,7 @@ export function TimeFormatToggle({ value, onChange }: TimeFormatToggleProps) {
             </button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Example: 10.34</p>
+            <p>2.39</p>
           </TooltipContent>
         </Tooltip>
       </div>
