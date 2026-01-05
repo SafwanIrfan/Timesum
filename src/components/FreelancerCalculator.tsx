@@ -39,6 +39,7 @@ export function FreelancerCalculator() {
   const [periodEntries, setPeriodEntries] = useState<Record<string, TimeEntry[]>>({});
   const [showCloseDialog, setShowCloseDialog] = useState(false);
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [projects, setProjects] = useState<string[]>([]);
   const [projectFilter, setProjectFilter] = useState<string>('');
 
@@ -448,7 +449,7 @@ export function FreelancerCalculator() {
                   userName={user?.user_metadata?.full_name}
                 />
               </div>
-              <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign out" className="h-8 w-8 sm:h-9 sm:w-9">
+              <Button variant="ghost" size="icon" onClick={() => setShowSignOutDialog(true)} title="Sign out" className="h-8 w-8 sm:h-9 sm:w-9">
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
@@ -682,6 +683,20 @@ export function FreelancerCalculator() {
           handleClearAll();
           setShowClearAllDialog(false);
         }}
+      />
+
+      {/* Sign Out Confirmation */}
+      <ConfirmDialog
+        open={showSignOutDialog}
+        onOpenChange={setShowSignOutDialog}
+        title="Sign Out"
+        description="Are you sure you want to sign out?"
+        confirmText="Sign Out"
+        onConfirm={() => {
+          handleSignOut();
+          setShowSignOutDialog(false);
+        }}
+        variant="default"
       />
     </div>
   );
