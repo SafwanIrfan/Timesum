@@ -55,10 +55,10 @@ export function MonthlyPeriodCard({
           <Calendar className="w-5 h-5 text-muted-foreground" />
           <div className="text-left">
             <h3 className="font-display font-semibold text-foreground">
-              {period.name || `${monthNames[period.month - 1]} ${period.year}`}
+              {period.name}
             </h3>
             <p className="text-sm text-muted-foreground">
-              {entries.length} entries • {formatDecimalHours(totalDecimalHours)} hrs • {formatCurrency(totalEarnings, currency.symbol)}
+              {monthNames[period.month - 1]} {period.year} • {entries.length} entries • {formatDecimalHours(totalDecimalHours)} hrs • {formatCurrency(totalEarnings, currency.symbol)}
             </p>
           </div>
         </div>
