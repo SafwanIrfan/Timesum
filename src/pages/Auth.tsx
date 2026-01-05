@@ -22,7 +22,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
   const [activeTab, setActiveTab] = useState('signin');
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function Auth() {
   }, [user, loading, navigate]);
 
   const validateForm = (isSignUp: boolean = false) => {
-    const newErrors: { email?: string; password?: string } = {};
+    const newErrors: { email?: string; password?: string; fullName?: string } = {};
     
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
@@ -40,10 +40,17 @@ export default function Auth() {
     }
     
     if (isSignUp) {
-      // Strong password validation for signup
+      // Full name is required for signup
+      if (!fullName.trim()) {
+        newErrors.fullName = 'Full name is required';
+      } else if (fullName.trim().length < 2) {
+        newErrors.fullName = 'Full name must be at least 2 characters';
+      }
+      
+      // Strong password validation for signup - must be "Strong" (all 5 requirements met)
       const strengthResult = validatePasswordStrength(password);
       if (!strengthResult.isValid) {
-        newErrors.password = strengthResult.message;
+        newErrors.password = 'Password must be strong (meet all requirements)';
       }
     } else {
       // Basic validation for signin
@@ -176,15 +183,19 @@ export default function Auth() {
             
             <TabsContent value="signup" className="space-y-4 mt-4">
               <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Full Name (optional)"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="pl-10"
-                  />
+                <div className="space-y-2">
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Full Name"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                  {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
                 </div>
                 <div className="space-y-2">
                   <div className="relative">
