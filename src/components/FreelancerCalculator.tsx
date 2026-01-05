@@ -456,7 +456,7 @@ export function FreelancerCalculator() {
               variant="default"
             />
             <SummaryCard
-              title="Current Earnings"
+              title="Current Month Earnings"
               value={formatCurrency(currentMonthEarnings, currency.symbol)}
               subtitle={`${entries.length} entries logged`}
               icon={<Calculator className="w-6 h-6" />}
