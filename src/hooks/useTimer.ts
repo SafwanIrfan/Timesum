@@ -8,7 +8,7 @@ export interface TimerState {
 }
 
 const STORAGE_KEY = 'timesum_active_timer';
-const ORIGINAL_TITLE = document.title;
+const DEFAULT_TITLE = 'Timesum';
 
 interface StoredTimer {
   startTime: string;
@@ -46,6 +46,14 @@ export function useTimer() {
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isInitializedRef = useRef(false);
+  const originalTitleRef = useRef<string>(DEFAULT_TITLE);
+
+  // Capture original title on first render (client-side only)
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      originalTitleRef.current = document.title || DEFAULT_TITLE;
+    }
+  }, []);
 
   // Calculate elapsed seconds from start time
   const calculateElapsed = useCallback((startTime: Date): number => {
@@ -54,12 +62,14 @@ export function useTimer() {
 
   // Update tab title with timer
   const updateTabTitle = useCallback((elapsed: number, isRunning: boolean, projectLabel?: string) => {
+    if (typeof document === 'undefined') return;
+    
     if (isRunning) {
       const timeStr = formatTimerDisplay(elapsed);
       const projectStr = projectLabel ? ` - ${projectLabel}` : '';
       document.title = `⏱️ ${timeStr}${projectStr} | Timesum`;
     } else {
-      document.title = ORIGINAL_TITLE;
+      document.title = originalTitleRef.current;
     }
   }, []);
 
@@ -121,7 +131,9 @@ export function useTimer() {
   // Clean up on unmount
   useEffect(() => {
     return () => {
-      document.title = ORIGINAL_TITLE;
+      if (typeof document !== 'undefined') {
+        document.title = originalTitleRef.current;
+      }
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
