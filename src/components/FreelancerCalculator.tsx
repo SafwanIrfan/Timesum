@@ -285,11 +285,18 @@ export function FreelancerCalculator() {
               variant="default"
             />
             <SummaryCard
-              title="Total Earnings"
+              title="Total Earning"
               value={formatCurrency(totalEarnings, currency.symbol)}
               subtitle={`${entries.length} entries logged`}
               icon={<Calculator className="w-6 h-6" />}
               variant="default"
+            />
+            <SummaryCard
+              title="Grand Total"
+              value={formatCurrency(totalEarnings, currency.symbol)}
+              subtitle="all time"
+              icon={<Calculator className="w-6 h-6" />}
+              variant="primary"
             />
           </div>
 
