@@ -2,9 +2,16 @@ import { useState } from 'react';
 import { TimeEntry } from '@/types/freelancer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Clock, Tag } from 'lucide-react';
+import { Trash2, Clock, Tag, Filter } from 'lucide-react';
 import { decimalToHHMMSS } from '@/utils/timeUtils';
 import { ConfirmDialog } from './ConfirmDialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface TimeEntryListProps {
   entries: TimeEntry[];
@@ -14,6 +21,17 @@ interface TimeEntryListProps {
 
 export function TimeEntryList({ entries, onRemove }: TimeEntryListProps) {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; value: string } | null>(null);
+  const [tagFilter, setTagFilter] = useState<string>('all');
+
+  // Get unique tags from entries
+  const uniqueTags = Array.from(new Set(entries.filter(e => e.tag).map(e => e.tag as string))).sort();
+
+  // Filter entries by selected tag
+  const filteredEntries = tagFilter === 'all' 
+    ? entries 
+    : tagFilter === 'untagged'
+    ? entries.filter(e => !e.tag)
+    : entries.filter(e => e.tag === tagFilter);
 
   const handleDeleteClick = (id: string, value: string) => {
     setDeleteTarget({ id, value });
@@ -38,45 +56,75 @@ export function TimeEntryList({ entries, onRemove }: TimeEntryListProps) {
 
   return (
     <>
-      <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-        {entries.map((entry, index) => (
-          <div
-            key={entry.id}
-            className="flex items-center justify-between p-2.5 sm:p-3 bg-secondary/50 rounded-lg group animate-scale-in"
-            style={{ animationDelay: `${index * 50}ms` }}
-          >
-            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
-              <span className="text-muted-foreground text-xs sm:text-sm font-mono w-5 sm:w-6 flex-shrink-0">
-                #{entries.length - index}
-              </span>
-              <div className="flex flex-col min-w-0 gap-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-foreground text-sm sm:text-base truncate font-mono">
-                    {decimalToHHMMSS(entry.decimalHours)}
-                  </span>
-                  {entry.tag && (
-                    <Badge variant="secondary" className="text-[10px] sm:text-xs gap-1 py-0 h-5">
-                      <Tag className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                      <span className="max-w-[60px] sm:max-w-[100px] truncate">{entry.tag}</span>
-                    </Badge>
-                  )}
-                </div>
-                <span className="text-xs text-muted-foreground truncate">
-                  {entry.createdAt.toLocaleDateString()} • {entry.value}
-                </span>
+      {/* Tag Filter */}
+      {uniqueTags.length > 0 && (
+        <div className="mb-3">
+          <Select value={tagFilter} onValueChange={setTagFilter}>
+            <SelectTrigger className="w-full sm:w-48 h-9 text-sm">
+              <div className="flex items-center gap-2">
+                <Filter className="w-3.5 h-3.5 text-muted-foreground" />
+                <SelectValue placeholder="Filter by tag" />
               </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleDeleteClick(entry.id, entry.value)}
-              className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive h-8 w-8 flex-shrink-0"
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All entries ({entries.length})</SelectItem>
+              <SelectItem value="untagged">Untagged ({entries.filter(e => !e.tag).length})</SelectItem>
+              {uniqueTags.map((tag) => (
+                <SelectItem key={tag} value={tag}>
+                  {tag} ({entries.filter(e => e.tag === tag).length})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {filteredEntries.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+          <Tag className="w-8 h-8 mb-2 opacity-50" />
+          <p className="text-sm">No entries with this filter</p>
+        </div>
+      ) : (
+        <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+          {filteredEntries.map((entry, index) => (
+            <div
+              key={entry.id}
+              className="flex items-center justify-between p-2.5 sm:p-3 bg-secondary/50 rounded-lg group animate-scale-in"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
-        ))}
-      </div>
+              <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+                <span className="text-muted-foreground text-xs sm:text-sm font-mono w-5 sm:w-6 flex-shrink-0">
+                  #{filteredEntries.length - index}
+                </span>
+                <div className="flex flex-col min-w-0 gap-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-foreground text-sm sm:text-base truncate font-mono">
+                      {decimalToHHMMSS(entry.decimalHours)}
+                    </span>
+                    {entry.tag && (
+                      <Badge variant="secondary" className="text-[10px] sm:text-xs gap-1 py-0 h-5">
+                        <Tag className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                        <span className="max-w-[60px] sm:max-w-[100px] truncate">{entry.tag}</span>
+                      </Badge>
+                    )}
+                  </div>
+                  <span className="text-xs text-muted-foreground truncate">
+                    {entry.createdAt.toLocaleDateString()} • {entry.value}
+                  </span>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleDeleteClick(entry.id, entry.value)}
+                className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive h-8 w-8 flex-shrink-0"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
 
       <ConfirmDialog
         open={!!deleteTarget}

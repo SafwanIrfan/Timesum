@@ -252,23 +252,37 @@ export function TimerWidget({ onSaveTime, tags, onAddTag }: TimerWidgetProps) {
                 <label className="block text-sm font-medium text-muted-foreground mb-1.5">
                   Start Time
                 </label>
-                <Input
-                  type="time"
-                  value={manualStartTime}
-                  onChange={(e) => setManualStartTime(e.target.value)}
-                  className="bg-background"
-                />
+                <div className="relative">
+                  <Input
+                    type="time"
+                    value={manualStartTime}
+                    onChange={(e) => setManualStartTime(e.target.value)}
+                    className="bg-background"
+                  />
+                  {!manualStartTime && (
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
+                      09:00
+                    </span>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1.5">
                   End Time
                 </label>
-                <Input
-                  type="time"
-                  value={manualEndTime}
-                  onChange={(e) => setManualEndTime(e.target.value)}
-                  className="bg-background"
-                />
+                <div className="relative">
+                  <Input
+                    type="time"
+                    value={manualEndTime}
+                    onChange={(e) => setManualEndTime(e.target.value)}
+                    className="bg-background"
+                  />
+                  {!manualEndTime && (
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
+                      17:00
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
