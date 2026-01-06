@@ -186,7 +186,7 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
           </div>
 
           {/* Tag Selection */}
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center px-4">
             <TagSelect
               value={timer.isRunning ? timer.projectLabel : selectedTag}
               onChange={handleTagChange}
@@ -194,18 +194,18 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
               onAddTag={onAddTag}
               onDeleteTag={onDeleteTag}
               placeholder="Add tag (optional)"
-              className="w-auto"
+              className="w-auto max-w-full"
             />
           </div>
 
           {/* Timer Controls */}
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 px-4">
             {!timer.isRunning ? (
               <Button
                 onClick={handleStartTimer}
                 variant="gradient"
                 size="lg"
-                className="gap-2 px-8"
+                className="gap-2 px-8 w-full sm:w-auto"
                 disabled={isSaving}
               >
                 <Play className="w-5 h-5" />
@@ -217,7 +217,7 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
                   onClick={handleStopTimer}
                   variant="success"
                   size="lg"
-                  className="gap-2 px-6"
+                  className="gap-2 px-6 w-full sm:w-auto"
                   disabled={isSaving}
                 >
                   <Square className="w-5 h-5" />
@@ -227,7 +227,7 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
                   onClick={handleDiscardTimer}
                   variant="ghost"
                   size="lg"
-                  className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 w-full sm:w-auto"
                   disabled={isSaving}
                 >
                   <Trash2 className="w-4 h-4" />

@@ -305,7 +305,7 @@ export function FreelancerCalculator() {
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 animate-fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
             <SummaryCard
               title="Total Hours"
               value={decimalToHHMMSS(totalDecimalHours)}
