@@ -66,7 +66,7 @@ export function TagSelect({
           {value || placeholder}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-56 p-2" align="start">
+      <PopoverContent className="w-56 p-2 bg-popover z-50" align="start">
         <div className="space-y-2">
           {/* Clear selection */}
           <button
@@ -83,17 +83,17 @@ export function TagSelect({
 
           {/* Existing tags */}
           {tags.map((tag) => (
-            <div key={tag} className="flex items-center gap-1">
+            <div key={tag} className="flex items-center gap-1 w-full">
               <button
                 onClick={() => handleSelect(tag)}
                 className={cn(
-                  "flex-1 flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors",
+                  "flex-1 flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors min-w-0",
                   value === tag && "bg-accent"
                 )}
               >
-                <Tag className="w-3.5 h-3.5 text-primary" />
-                <span className="truncate">{tag}</span>
-                {value === tag && <Check className="w-3.5 h-3.5 ml-auto" />}
+                <Tag className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="truncate flex-1 text-left">{tag}</span>
+                {value === tag && <Check className="w-3.5 h-3.5 shrink-0" />}
               </button>
               {onDeleteTag && (
                 <button
@@ -101,7 +101,7 @@ export function TagSelect({
                     e.stopPropagation();
                     setDeleteTarget(tag);
                   }}
-                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0"
                   title="Delete tag"
                 >
                   <X className="w-3 h-3" />
