@@ -291,13 +291,6 @@ export function FreelancerCalculator() {
               icon={<Calculator className="w-6 h-6" />}
               variant="default"
             />
-            <SummaryCard
-              title="Grand Total"
-              value={formatCurrency(totalEarnings, currency.symbol)}
-              subtitle="all time"
-              icon={<Calculator className="w-6 h-6" />}
-              variant="primary"
-            />
           </div>
 
           {/* Timer Widget - Main Feature */}
