@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { TimeEntry } from '@/types/freelancer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Clock, FolderOpen } from 'lucide-react';
+import { Trash2, Clock, Tag } from 'lucide-react';
 import { decimalToHHMMSS } from '@/utils/timeUtils';
 import { ConfirmDialog } from './ConfirmDialog';
 
@@ -54,15 +54,15 @@ export function TimeEntryList({ entries, onRemove }: TimeEntryListProps) {
                   <span className="font-medium text-foreground text-sm sm:text-base truncate font-mono">
                     {decimalToHHMMSS(entry.decimalHours)}
                   </span>
-                  {entry.project && (
+                  {entry.tag && (
                     <Badge variant="secondary" className="text-[10px] sm:text-xs gap-1 py-0 h-5">
-                      <FolderOpen className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                      <span className="max-w-[60px] sm:max-w-[100px] truncate">{entry.project}</span>
+                      <Tag className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                      <span className="max-w-[60px] sm:max-w-[100px] truncate">{entry.tag}</span>
                     </Badge>
                   )}
                 </div>
                 <span className="text-xs text-muted-foreground truncate">
-                  {entry.value}
+                  {entry.createdAt.toLocaleDateString()} • {entry.value}
                 </span>
               </div>
             </div>

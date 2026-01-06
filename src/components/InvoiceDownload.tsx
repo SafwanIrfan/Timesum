@@ -1,8 +1,9 @@
-import { useRef, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { TimeEntry, Currency } from '@/types/freelancer';
 import { decimalToHHMMSS, formatCurrency } from '@/utils/timeUtils';
 import { Button } from '@/components/ui/button';
-import { FileDown } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { FileDown, CheckSquare } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,18 +11,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface InvoiceDownloadProps {
   entries: TimeEntry[];
   hourlyRate: string;
   currency: Currency;
-  totalDecimalHours: number;
-  totalEarnings: number;
   userName?: string;
 }
 
-interface ProjectGroup {
-  project: string;
+interface TagGroup {
+  tag: string;
   entries: TimeEntry[];
   totalHours: number;
   totalAmount: number;
@@ -31,49 +31,85 @@ export function InvoiceDownload({
   entries,
   hourlyRate,
   currency,
-  totalDecimalHours,
-  totalEarnings,
   userName,
 }: InvoiceDownloadProps) {
-  const invoiceRef = useRef<HTMLDivElement>(null);
+  const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set());
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Group entries by project
-  const projectGroups = useMemo((): ProjectGroup[] => {
+  const rate = parseFloat(hourlyRate) || 0;
+
+  // When dialog opens, select all entries by default
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open) {
+      setSelectedEntryIds(new Set(entries.map(e => e.id)));
+    }
+  };
+
+  // Selected entries for invoice
+  const selectedEntries = useMemo(() => {
+    return entries.filter(e => selectedEntryIds.has(e.id));
+  }, [entries, selectedEntryIds]);
+
+  // Calculate totals for selected entries
+  const selectedTotalHours = useMemo(() => {
+    return selectedEntries.reduce((sum, e) => sum + e.decimalHours, 0);
+  }, [selectedEntries]);
+
+  const selectedTotalEarnings = selectedTotalHours * rate;
+
+  // Group selected entries by tag
+  const tagGroups = useMemo((): TagGroup[] => {
     const groups: Record<string, TimeEntry[]> = {};
-    const rate = parseFloat(hourlyRate) || 0;
     
-    entries.forEach(entry => {
-      const projectKey = entry.project || 'No Project';
-      if (!groups[projectKey]) {
-        groups[projectKey] = [];
+    selectedEntries.forEach(entry => {
+      const tagKey = entry.tag || 'No Tag';
+      if (!groups[tagKey]) {
+        groups[tagKey] = [];
       }
-      groups[projectKey].push(entry);
+      groups[tagKey].push(entry);
     });
 
     return Object.entries(groups)
-      .map(([project, projectEntries]) => {
-        const totalHours = projectEntries.reduce((sum, e) => sum + e.decimalHours, 0);
+      .map(([tag, tagEntries]) => {
+        const totalHours = tagEntries.reduce((sum, e) => sum + e.decimalHours, 0);
         return {
-          project,
-          entries: projectEntries,
+          tag,
+          entries: tagEntries,
           totalHours,
           totalAmount: totalHours * rate,
         };
       })
       .sort((a, b) => b.totalHours - a.totalHours);
-  }, [entries, hourlyRate]);
+  }, [selectedEntries, rate]);
+
+  const toggleEntry = (id: string) => {
+    setSelectedEntryIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedEntryIds(new Set(entries.map(e => e.id)));
+  };
+
+  const deselectAll = () => {
+    setSelectedEntryIds(new Set());
+  };
 
   const handleDownload = () => {
-    if (!invoiceRef.current) return;
+    if (selectedEntries.length === 0) return;
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
     const now = new Date();
-    const invoiceMonth = now.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-    });
     const invoiceDate = now.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -81,7 +117,6 @@ export function InvoiceDownload({
     });
 
     const invoiceNumber = `INV-${Date.now().toString(36).toUpperCase()}`;
-    const rate = parseFloat(hourlyRate) || 0;
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -113,11 +148,6 @@ export function InvoiceDownload({
               font-weight: 700;
               color: #0d9488;
             }
-            .invoice-period {
-              font-size: 18px;
-              color: #475569;
-              margin-top: 8px;
-            }
             .invoice-meta {
               text-align: right;
             }
@@ -140,13 +170,13 @@ export function InvoiceDownload({
               letter-spacing: 0.5px;
               margin-bottom: 10px;
             }
-            .project-group {
+            .tag-group {
               margin-bottom: 24px;
               border: 1px solid #e2e8f0;
               border-radius: 8px;
               overflow: hidden;
             }
-            .project-header {
+            .tag-header {
               background: #f8fafc;
               padding: 12px 16px;
               display: flex;
@@ -154,12 +184,12 @@ export function InvoiceDownload({
               align-items: center;
               border-bottom: 1px solid #e2e8f0;
             }
-            .project-name {
+            .tag-name {
               font-weight: 600;
               color: #334155;
               font-size: 15px;
             }
-            .project-total {
+            .tag-total {
               font-weight: 600;
               color: #0d9488;
             }
@@ -228,22 +258,22 @@ export function InvoiceDownload({
           <div class="invoice-header">
             <div>
               <h1 class="invoice-title">INVOICE</h1>
-              <p class="invoice-period">${invoiceMonth}</p>
               ${userName ? `<p style="margin-top: 8px; font-size: 14px; color: #334155;"><strong>From:</strong> ${userName}</p>` : ''}
             </div>
             <div class="invoice-meta">
               <p class="invoice-number">${invoiceNumber}</p>
               <p>Date: ${invoiceDate}</p>
+              <p>Entries: ${selectedEntries.length}</p>
             </div>
           </div>
 
           <div class="section">
-            <h2 class="section-title">Time Entries by Project</h2>
-            ${projectGroups.map(group => `
-              <div class="project-group">
-                <div class="project-header">
-                  <span class="project-name">${group.project}</span>
-                  <span class="project-total">${decimalToHHMMSS(group.totalHours)} • ${formatCurrency(group.totalAmount, currency.symbol)}</span>
+            <h2 class="section-title">Time Entries${tagGroups.length > 1 ? ' by Tag' : ''}</h2>
+            ${tagGroups.map(group => `
+              <div class="tag-group">
+                <div class="tag-header">
+                  <span class="tag-name">${group.tag}</span>
+                  <span class="tag-total">${decimalToHHMMSS(group.totalHours)} • ${formatCurrency(group.totalAmount, currency.symbol)}</span>
                 </div>
                 <table>
                   <thead>
@@ -273,7 +303,7 @@ export function InvoiceDownload({
             <table class="summary-table">
               <tr>
                 <td>Total Hours</td>
-                <td class="text-right">${decimalToHHMMSS(totalDecimalHours)}</td>
+                <td class="text-right">${decimalToHHMMSS(selectedTotalHours)}</td>
               </tr>
               <tr>
                 <td>Hourly Rate</td>
@@ -281,7 +311,7 @@ export function InvoiceDownload({
               </tr>
               <tr class="summary-total">
                 <td><strong>Total Due</strong></td>
-                <td class="text-right"><strong>${formatCurrency(totalEarnings, currency.symbol)}</strong></td>
+                <td class="text-right"><strong>${formatCurrency(selectedTotalEarnings, currency.symbol)}</strong></td>
               </tr>
             </table>
           </div>
@@ -301,12 +331,13 @@ export function InvoiceDownload({
     `);
 
     printWindow.document.close();
+    setIsOpen(false);
   };
 
   const isDisabled = entries.length === 0 || !hourlyRate;
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
@@ -319,56 +350,96 @@ export function InvoiceDownload({
           <span className="xs:hidden">Invoice</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Download Invoice</DialogTitle>
+          <DialogTitle>Create Invoice</DialogTitle>
         </DialogHeader>
-        <div ref={invoiceRef} className="p-4 border border-border rounded-lg bg-background">
-          <div className="space-y-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-lg font-bold text-primary">Invoice Preview</h3>
-                <p className="text-xs text-muted-foreground">
-                  {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                </p>
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {new Date().toLocaleDateString()}
-              </span>
-            </div>
-            
-            {/* Project breakdown preview */}
-            {projectGroups.length > 0 && (
-              <div className="space-y-1.5">
-                <p className="text-xs font-medium text-muted-foreground">By Project</p>
-                {projectGroups.map(group => (
-                  <div key={group.project} className="flex justify-between py-1 text-sm border-b border-border/50">
-                    <span className="text-muted-foreground truncate max-w-[60%]">{group.project}</span>
-                    <span className="font-medium font-mono">{decimalToHHMMSS(group.totalHours)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            <div className="space-y-2 text-sm pt-2 border-t border-border">
-              <div className="flex justify-between py-1">
-                <span className="text-muted-foreground">Total Hours</span>
-                <span className="font-medium">{decimalToHHMMSS(totalDecimalHours)}</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span className="text-muted-foreground">Hourly Rate</span>
-                <span className="font-medium">{formatCurrency(parseFloat(hourlyRate) || 0, currency.symbol)}</span>
-              </div>
-              <div className="flex justify-between py-2 text-base">
-                <span className="font-semibold">Total Earnings</span>
-                <span className="font-bold text-primary">{formatCurrency(totalEarnings, currency.symbol)}</span>
-              </div>
+        
+        {/* Entry Selection */}
+        <div className="flex-1 min-h-0 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Select entries to include ({selectedEntryIds.size} of {entries.length})
+            </p>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={selectAll} className="text-xs h-7">
+                <CheckSquare className="w-3 h-3 mr-1" />
+                All
+              </Button>
+              <Button variant="outline" size="sm" onClick={deselectAll} className="text-xs h-7">
+                None
+              </Button>
             </div>
           </div>
+
+          <ScrollArea className="h-[200px] border rounded-lg">
+            <div className="p-2 space-y-1">
+              {entries.map((entry) => (
+                <label
+                  key={entry.id}
+                  className="flex items-center gap-3 p-2 rounded-md hover:bg-accent cursor-pointer"
+                >
+                  <Checkbox
+                    checked={selectedEntryIds.has(entry.id)}
+                    onCheckedChange={() => toggleEntry(entry.id)}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm">
+                        {decimalToHHMMSS(entry.decimalHours)}
+                      </span>
+                      {entry.tag && (
+                        <span className="text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                          {entry.tag}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {entry.createdAt.toLocaleDateString()} • {entry.value}
+                    </span>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </ScrollArea>
+
+          {/* Preview Summary */}
+          {selectedEntries.length > 0 && (
+            <div className="p-4 border border-border rounded-lg bg-accent/30 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">Invoice Summary</h3>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedEntries.length} entries selected
+                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total Hours</span>
+                  <span className="font-medium font-mono">{decimalToHHMMSS(selectedTotalHours)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Rate</span>
+                  <span className="font-medium">{formatCurrency(rate, currency.symbol)}/hr</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-border">
+                  <span className="font-semibold">Total</span>
+                  <span className="font-bold text-primary">{formatCurrency(selectedTotalEarnings, currency.symbol)}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-        <Button onClick={handleDownload} className="w-full gap-2">
+
+        <Button 
+          onClick={handleDownload} 
+          className="w-full gap-2"
+          disabled={selectedEntries.length === 0}
+        >
           <FileDown className="w-4 h-4" />
-          Download as PDF
+          Download Invoice ({selectedEntries.length} entries)
         </Button>
       </DialogContent>
     </Dialog>

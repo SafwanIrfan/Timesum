@@ -12,32 +12,31 @@ import {
   Plus,
 } from 'lucide-react';
 import { useTimer, formatTimerDisplay, secondsToDecimalHours } from '@/hooks/useTimer';
-import { ProjectSelect } from './ProjectSelect';
+import { TagSelect } from './TagSelect';
 import { toast } from '@/hooks/use-toast';
-import { decimalToHHMMSS } from '@/utils/timeUtils';
 import { cn } from '@/lib/utils';
 
 interface TimerWidgetProps {
-  onSaveTime: (decimalHours: number, displayValue: string, project?: string) => Promise<void>;
-  projects: string[];
-  onAddProject: (project: string) => void;
+  onSaveTime: (decimalHours: number, displayValue: string, tag?: string) => Promise<void>;
+  tags: string[];
+  onAddTag: (tag: string) => void;
 }
 
-export function TimerWidget({ onSaveTime, projects, onAddProject }: TimerWidgetProps) {
+export function TimerWidget({ onSaveTime, tags, onAddTag }: TimerWidgetProps) {
   const timer = useTimer();
-  const [selectedProject, setSelectedProject] = useState('');
+  const [selectedTag, setSelectedTag] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   
   // Manual time entry state
   const [manualStartTime, setManualStartTime] = useState('');
   const [manualEndTime, setManualEndTime] = useState('');
-  const [manualProject, setManualProject] = useState('');
+  const [manualTag, setManualTag] = useState('');
 
   const handleStartTimer = () => {
-    timer.start(selectedProject);
+    timer.start(selectedTag);
     toast({
       title: 'Timer started',
-      description: selectedProject ? `Tracking time for ${selectedProject}` : 'Time tracking started',
+      description: selectedTag ? `Tracking time with tag "${selectedTag}"` : 'Time tracking started',
     });
   };
 
@@ -61,7 +60,7 @@ export function TimerWidget({ onSaveTime, projects, onAddProject }: TimerWidgetP
       await onSaveTime(result.decimalHours, displayValue, result.projectLabel || undefined);
       toast({
         title: 'Time saved',
-        description: `Added ${formatTimerDisplay(result.elapsedSeconds)}${result.projectLabel ? ` to ${result.projectLabel}` : ''}`,
+        description: `Added ${formatTimerDisplay(result.elapsedSeconds)}${result.projectLabel ? ` with tag "${result.projectLabel}"` : ''}`,
       });
     } catch (error) {
       toast({
@@ -82,10 +81,10 @@ export function TimerWidget({ onSaveTime, projects, onAddProject }: TimerWidgetP
     });
   };
 
-  const handleProjectChange = (project: string) => {
-    setSelectedProject(project);
+  const handleTagChange = (tag: string) => {
+    setSelectedTag(tag);
     if (timer.isRunning) {
-      timer.setProjectLabel(project);
+      timer.setProjectLabel(tag);
     }
   };
 
@@ -127,17 +126,17 @@ export function TimerWidget({ onSaveTime, projects, onAddProject }: TimerWidgetP
       const displayValue = `${manualStartTime} - ${manualEndTime}`;
 
       setIsSaving(true);
-      await onSaveTime(decimalHours, displayValue, manualProject || undefined);
+      await onSaveTime(decimalHours, displayValue, manualTag || undefined);
       
       toast({
         title: 'Time saved',
-        description: `Added ${formatTimerDisplay(diffSeconds)}${manualProject ? ` to ${manualProject}` : ''}`,
+        description: `Added ${formatTimerDisplay(diffSeconds)}${manualTag ? ` with tag "${manualTag}"` : ''}`,
       });
 
       // Reset form
       setManualStartTime('');
       setManualEndTime('');
-      setManualProject('');
+      setManualTag('');
     } catch (error) {
       toast({
         title: 'Error saving time',
@@ -180,24 +179,21 @@ export function TimerWidget({ onSaveTime, projects, onAddProject }: TimerWidgetP
             )}>
               {timer.displayTime}
             </div>
-            {timer.isRunning && (
+            {timer.isRunning && timer.projectLabel && (
               <p className="text-sm text-muted-foreground mt-2">
-                {timer.displayTime}
-                {timer.projectLabel && (
-                  <span className="text-primary"> • {timer.projectLabel}</span>
-                )}
+                <span className="text-primary">Tag: {timer.projectLabel}</span>
               </p>
             )}
           </div>
 
-          {/* Project Selection */}
+          {/* Tag Selection */}
           <div className="flex items-center justify-center">
-            <ProjectSelect
-              value={timer.isRunning ? timer.projectLabel : selectedProject}
-              onChange={handleProjectChange}
-              projects={projects}
-              onAddProject={onAddProject}
-              placeholder="Select project (optional)"
+            <TagSelect
+              value={timer.isRunning ? timer.projectLabel : selectedTag}
+              onChange={handleTagChange}
+              tags={tags}
+              onAddTag={onAddTag}
+              placeholder="Add tag (optional)"
               className="w-auto"
             />
           </div>
@@ -297,13 +293,13 @@ export function TimerWidget({ onSaveTime, projects, onAddProject }: TimerWidgetP
 
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-                Project (optional)
+                Tag (optional)
               </label>
-              <ProjectSelect
-                value={manualProject}
-                onChange={setManualProject}
-                projects={projects}
-                onAddProject={onAddProject}
+              <TagSelect
+                value={manualTag}
+                onChange={setManualTag}
+                tags={tags}
+                onAddTag={onAddTag}
                 className="w-full justify-start"
               />
             </div>

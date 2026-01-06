@@ -5,25 +5,25 @@ import { TimeFormat } from '@/types/freelancer';
 import { isValidHHMMSS, isValidDecimal, parseHHMMSS, parseDecimal } from '@/utils/timeUtils';
 import { Plus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { ProjectSelect } from './ProjectSelect';
+import { TagSelect } from './TagSelect';
 
 interface TimeEntryInputProps {
   format: TimeFormat;
-  onAdd: (value: string, decimalHours: number, project?: string) => void;
-  projects?: string[];
-  onAddProject?: (project: string) => void;
-  showProjectSelect?: boolean;
+  onAdd: (value: string, decimalHours: number, tag?: string) => void;
+  tags?: string[];
+  onAddTag?: (tag: string) => void;
+  showTagSelect?: boolean;
 }
 
 export function TimeEntryInput({ 
   format, 
   onAdd, 
-  projects = [], 
-  onAddProject,
-  showProjectSelect = true 
+  tags = [], 
+  onAddTag,
+  showTagSelect = true 
 }: TimeEntryInputProps) {
   const [inputValue, setInputValue] = useState('');
-  const [selectedProject, setSelectedProject] = useState('');
+  const [selectedTag, setSelectedTag] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +46,7 @@ export function TimeEntryInput({
         return;
       }
       const decimalHours = parseHHMMSS(inputValue);
-      onAdd(inputValue, decimalHours, selectedProject || undefined);
+      onAdd(inputValue, decimalHours, selectedTag || undefined);
     } else {
       if (!isValidDecimal(inputValue)) {
         toast({
@@ -57,7 +57,7 @@ export function TimeEntryInput({
         return;
       }
       const decimalHours = parseDecimal(inputValue);
-      onAdd(inputValue, decimalHours, selectedProject || undefined);
+      onAdd(inputValue, decimalHours, selectedTag || undefined);
     }
     
     setInputValue('');
@@ -78,12 +78,12 @@ export function TimeEntryInput({
           <span className="hidden xs:inline">Add</span>
         </Button>
       </form>
-      {showProjectSelect && (
-        <ProjectSelect
-          value={selectedProject}
-          onChange={setSelectedProject}
-          projects={projects}
-          onAddProject={onAddProject}
+      {showTagSelect && (
+        <TagSelect
+          value={selectedTag}
+          onChange={setSelectedTag}
+          tags={tags}
+          onAddTag={onAddTag}
         />
       )}
     </div>
