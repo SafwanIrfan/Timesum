@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { TimeFormat, TimeEntry, Currency, CURRENCIES } from "@/types/freelancer";
 import { decimalToHHMMSS, formatCurrency } from "@/utils/timeUtils";
 
-import { TimeEntryInput } from "./TimeEntryInput";
+
 import { TimeEntryList } from "./TimeEntryList";
 import { CurrencySelect } from "./CurrencySelect";
 import { HourlyRateInput } from "./HourlyRateInput";
@@ -331,22 +331,7 @@ export function FreelancerCalculator() {
                   )}
                 </div>
               </div>
-              <div className="space-y-4">
-                <TimeEntryInput 
-                  format={timeFormat} 
-                  onAdd={async (value, decimalHours, tag) => {
-                    await handleAddEntry(value, decimalHours, tag);
-                    toast({
-                      title: "Entry added",
-                      description: `Added ${decimalToHHMMSS(decimalHours)}${tag ? ` with tag "${tag}"` : ''}`,
-                    });
-                  }}
-                  tags={tags}
-                  onAddTag={handleAddTag}
-                  showTagSelect={true}
-                />
-                <TimeEntryList entries={entries} format={timeFormat} onRemove={handleRemoveEntry} />
-              </div>
+              <TimeEntryList entries={entries} format={timeFormat} onRemove={handleRemoveEntry} />
             </div>
 
             {/* Rate & Currency Card */}
