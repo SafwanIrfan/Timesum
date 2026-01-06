@@ -14,6 +14,7 @@ interface TagSelectProps {
   onChange: (value: string) => void;
   tags: string[];
   onAddTag?: (tag: string) => void;
+  onDeleteTag?: (tag: string) => void;
   placeholder?: string;
   className?: string;
 }
@@ -23,9 +24,11 @@ export function TagSelect({
   onChange,
   tags,
   onAddTag,
+  onDeleteTag,
   placeholder = "Add tag (optional)",
   className,
 }: TagSelectProps) {
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [newTag, setNewTag] = useState('');
 
@@ -80,19 +83,63 @@ export function TagSelect({
 
           {/* Existing tags */}
           {tags.map((tag) => (
-            <button
-              key={tag}
-              onClick={() => handleSelect(tag)}
-              className={cn(
-                "w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors",
-                value === tag && "bg-accent"
+            <div key={tag} className="flex items-center gap-1">
+              <button
+                onClick={() => handleSelect(tag)}
+                className={cn(
+                  "flex-1 flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors",
+                  value === tag && "bg-accent"
+                )}
+              >
+                <Tag className="w-3.5 h-3.5 text-primary" />
+                <span className="truncate">{tag}</span>
+                {value === tag && <Check className="w-3.5 h-3.5 ml-auto" />}
+              </button>
+              {onDeleteTag && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteTarget(tag);
+                  }}
+                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                  title="Delete tag"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               )}
-            >
-              <Tag className="w-3.5 h-3.5 text-primary" />
-              <span className="truncate">{tag}</span>
-              {value === tag && <Check className="w-3.5 h-3.5 ml-auto" />}
-            </button>
+            </div>
           ))}
+
+          {/* Delete confirmation */}
+          {deleteTarget && (
+            <div className="p-2 mt-2 border-t border-border bg-destructive/5 rounded-md">
+              <p className="text-xs text-muted-foreground mb-2">
+                Delete tag "{deleteTarget}"? This will remove the tag from all entries.
+              </p>
+              <div className="flex gap-1.5">
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="h-6 text-xs flex-1"
+                  onClick={() => {
+                    onDeleteTag(deleteTarget);
+                    if (value === deleteTarget) onChange('');
+                    setDeleteTarget(null);
+                  }}
+                >
+                  Delete
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 text-xs flex-1"
+                  onClick={() => setDeleteTarget(null)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Add new tag */}
           {onAddTag && (

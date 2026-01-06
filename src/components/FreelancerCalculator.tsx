@@ -131,6 +131,44 @@ export function FreelancerCalculator() {
     }
   };
 
+  const handleDeleteTag = async (tag: string) => {
+    if (!user) return;
+
+    // Remove tag from all entries in database
+    const { error } = await supabase
+      .from("time_entries")
+      .update({ tag: null })
+      .eq("user_id", user.id)
+      .eq("tag", tag);
+
+    if (error) {
+      toast({
+        title: "Error deleting tag",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Update local state
+    setTags((prev) => prev.filter((t) => t !== tag));
+    setEntries((prev) =>
+      prev.map((entry) =>
+        entry.tag === tag ? { ...entry, tag: undefined } : entry
+      )
+    );
+
+    // Reset filter if deleted tag was selected
+    if (tagFilter === tag) {
+      setTagFilter('all');
+    }
+
+    toast({
+      title: "Tag deleted",
+      description: `"${tag}" has been removed from all entries`,
+    });
+  };
+
   const handleAddEntry = async (value: string, decimalHours: number, tag?: string) => {
     if (!user) return;
 
@@ -307,7 +345,7 @@ export function FreelancerCalculator() {
               <Clock className="w-5 h-5 text-primary" />
               Track Your Time
             </h2>
-            <TimerWidget onSaveTime={handleTimerSave} tags={tags} onAddTag={handleAddTag} />
+            <TimerWidget onSaveTime={handleTimerSave} tags={tags} onAddTag={handleAddTag} onDeleteTag={handleDeleteTag} />
           </div>
 
           {/* Input Section */}
