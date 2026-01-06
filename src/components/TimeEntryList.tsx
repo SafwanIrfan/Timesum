@@ -17,11 +17,12 @@ interface TimeEntryListProps {
   entries: TimeEntry[];
   format?: string; // kept for compatibility but not used
   onRemove: (id: string) => void;
+  tagFilter: string;
+  onTagFilterChange: (value: string) => void;
 }
 
-export function TimeEntryList({ entries, onRemove }: TimeEntryListProps) {
+export function TimeEntryList({ entries, onRemove, tagFilter, onTagFilterChange }: TimeEntryListProps) {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; value: string } | null>(null);
-  const [tagFilter, setTagFilter] = useState<string>('all');
 
   // Get unique tags from entries
   const uniqueTags = Array.from(new Set(entries.filter(e => e.tag).map(e => e.tag as string))).sort();
@@ -57,9 +58,9 @@ export function TimeEntryList({ entries, onRemove }: TimeEntryListProps) {
   return (
     <>
       {/* Tag Filter */}
-      {uniqueTags.length > 0 && (
+      {(uniqueTags.length > 0 || tagFilter !== 'all') && (
         <div className="mb-3">
-          <Select value={tagFilter} onValueChange={setTagFilter}>
+          <Select value={tagFilter} onValueChange={onTagFilterChange}>
             <SelectTrigger className="w-full sm:w-48 h-9 text-sm">
               <div className="flex items-center gap-2">
                 <Filter className="w-3.5 h-3.5 text-muted-foreground" />

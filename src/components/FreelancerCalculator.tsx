@@ -26,6 +26,7 @@ export function FreelancerCalculator() {
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
+  const [tagFilter, setTagFilter] = useState<string>('all');
 
   // Load user's data from database
   useEffect(() => {
@@ -114,7 +115,14 @@ export function FreelancerCalculator() {
     return () => clearTimeout(debounce);
   }, [currency, hourlyRate, user, isLoading]);
 
-  const totalDecimalHours = entries.reduce((sum, entry) => sum + entry.decimalHours, 0);
+  // Filter entries by tag
+  const filteredEntries = tagFilter === 'all' 
+    ? entries 
+    : tagFilter === 'untagged'
+    ? entries.filter(e => !e.tag)
+    : entries.filter(e => e.tag === tagFilter);
+
+  const totalDecimalHours = filteredEntries.reduce((sum, entry) => sum + entry.decimalHours, 0);
   const totalEarnings = totalDecimalHours * (parseFloat(hourlyRate) || 0);
 
   const handleAddTag = (tag: string) => {
@@ -273,7 +281,7 @@ export function FreelancerCalculator() {
             <SummaryCard
               title="Total Hours"
               value={decimalToHHMMSS(totalDecimalHours)}
-              subtitle={`${entries.length} entries logged`}
+              subtitle={tagFilter === 'all' ? `${entries.length} entries logged` : `${filteredEntries.length} of ${entries.length} entries`}
               icon={<Clock className="w-6 h-6" />}
               variant="default"
             />
@@ -287,7 +295,7 @@ export function FreelancerCalculator() {
             <SummaryCard
               title="Total Earning"
               value={formatCurrency(totalEarnings, currency.symbol)}
-              subtitle={`${entries.length} entries logged`}
+              subtitle={tagFilter === 'all' ? `${entries.length} entries logged` : `${filteredEntries.length} of ${entries.length} entries`}
               icon={<Calculator className="w-6 h-6" />}
               variant="default"
             />
@@ -325,7 +333,13 @@ export function FreelancerCalculator() {
                   )}
                 </div>
               </div>
-              <TimeEntryList entries={entries} format={timeFormat} onRemove={handleRemoveEntry} />
+              <TimeEntryList 
+                entries={entries} 
+                format={timeFormat} 
+                onRemove={handleRemoveEntry}
+                tagFilter={tagFilter}
+                onTagFilterChange={setTagFilter}
+              />
             </div>
 
             {/* Rate & Currency Card */}
