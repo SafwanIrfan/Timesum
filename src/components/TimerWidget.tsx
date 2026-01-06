@@ -20,9 +20,10 @@ interface TimerWidgetProps {
   onSaveTime: (decimalHours: number, displayValue: string, tag?: string) => Promise<void>;
   tags: string[];
   onAddTag: (tag: string) => void;
+  onDeleteTag: (tag: string) => void;
 }
 
-export function TimerWidget({ onSaveTime, tags, onAddTag }: TimerWidgetProps) {
+export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWidgetProps) {
   const timer = useTimer();
   const [selectedTag, setSelectedTag] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -193,6 +194,7 @@ export function TimerWidget({ onSaveTime, tags, onAddTag }: TimerWidgetProps) {
               onChange={handleTagChange}
               tags={tags}
               onAddTag={onAddTag}
+              onDeleteTag={onDeleteTag}
               placeholder="Add tag (optional)"
               className="w-auto"
             />
@@ -314,6 +316,7 @@ export function TimerWidget({ onSaveTime, tags, onAddTag }: TimerWidgetProps) {
                 onChange={setManualTag}
                 tags={tags}
                 onAddTag={onAddTag}
+                onDeleteTag={onDeleteTag}
                 className="w-full justify-start"
               />
             </div>
