@@ -21,22 +21,22 @@ export function SummaryCard({
   return (
     <div 
       className={cn(
-        "relative overflow-hidden rounded-xl p-4 sm:p-6 transition-all duration-300 hover:shadow-lg",
+        "relative overflow-hidden rounded-xl p-5 sm:p-6 transition-all duration-300 hover:shadow-lg",
         variant === 'default' && "bg-card border border-border",
         variant === 'primary' && "bg-gradient-primary text-primary-foreground shadow-glow",
         variant === 'success' && "bg-success text-success-foreground",
         className
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="space-y-1 sm:space-y-2 min-w-0 flex-1">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1.5 min-w-0 flex-1">
           <p className={cn(
-            "text-xs sm:text-sm font-medium",
+            "text-sm font-medium",
             variant === 'default' ? "text-muted-foreground" : "opacity-90"
           )}>
             {title}
           </p>
-          <p className="text-xl sm:text-2xl md:text-3xl font-display font-bold tracking-tight truncate">
+          <p className="text-2xl sm:text-3xl font-display font-bold tracking-tight truncate">
             {value}
           </p>
           {subtitle && (
@@ -49,7 +49,7 @@ export function SummaryCard({
           )}
         </div>
         <div className={cn(
-          "p-2 sm:p-3 rounded-lg flex-shrink-0",
+          "p-2.5 sm:p-3 rounded-lg flex-shrink-0",
           variant === 'default' && "bg-accent text-accent-foreground",
           variant === 'primary' && "bg-primary-foreground/20",
           variant === 'success' && "bg-success-foreground/20"

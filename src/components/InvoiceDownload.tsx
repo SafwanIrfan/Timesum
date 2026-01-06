@@ -343,11 +343,11 @@ export function InvoiceDownload({
           variant="outline" 
           size="sm"
           disabled={isDisabled}
-          className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-9"
+          className="gap-2 text-sm h-9"
         >
-          <FileDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          <span className="hidden xs:inline">Download Invoice</span>
-          <span className="xs:hidden">Invoice</span>
+          <FileDown className="w-4 h-4" />
+          <span className="hidden sm:inline">Download Invoice</span>
+          <span className="sm:hidden">Invoice</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col">

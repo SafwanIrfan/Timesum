@@ -150,38 +150,36 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
   };
 
   return (
-    <Card className="p-4 sm:p-6 border-primary/20 bg-gradient-to-br from-card to-primary/5">
+    <Card className="p-5 sm:p-6 border-primary/20 bg-gradient-to-br from-card to-primary/5">
       <Tabs defaultValue="auto" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-4">
-          <TabsTrigger value="auto" className="gap-2">
+        <TabsList className="grid w-full grid-cols-2 mb-5">
+          <TabsTrigger value="auto" className="gap-2 text-sm">
             <Timer className="w-4 h-4" />
-            <span className="hidden sm:inline">Auto Timer</span>
-            <span className="sm:hidden">Auto</span>
+            Auto Timer
           </TabsTrigger>
-          <TabsTrigger value="manual" className="gap-2">
+          <TabsTrigger value="manual" className="gap-2 text-sm">
             <Clock className="w-4 h-4" />
-            <span className="hidden sm:inline">Manual Entry</span>
-            <span className="sm:hidden">Manual</span>
+            Manual Entry
           </TabsTrigger>
         </TabsList>
 
         {/* Auto Timer Tab */}
-        <TabsContent value="auto" className="space-y-4 mt-0">
+        <TabsContent value="auto" className="space-y-5 mt-0">
           {/* Timer Display */}
           <div className={cn(
-            "text-center py-4 sm:py-6 rounded-lg transition-all",
+            "text-center py-6 sm:py-8 rounded-lg transition-all",
             timer.isRunning 
               ? "bg-primary/10 border border-primary/30 animate-pulse" 
               : "bg-accent/50"
           )}>
             <div className={cn(
-              "font-mono text-3xl sm:text-4xl md:text-5xl font-bold tracking-wider",
+              "font-mono text-4xl sm:text-5xl font-bold tracking-wider",
               timer.isRunning ? "text-primary" : "text-muted-foreground"
             )}>
               {timer.displayTime}
             </div>
             {timer.isRunning && timer.projectLabel && (
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-sm text-muted-foreground mt-3">
                 <span className="text-primary">Tag: {timer.projectLabel}</span>
               </p>
             )}
@@ -247,44 +245,32 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
         </TabsContent>
 
         {/* Manual Entry Tab */}
-        <TabsContent value="manual" className="space-y-4 mt-0">
-          <form onSubmit={handleManualSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+        <TabsContent value="manual" className="space-y-5 mt-0">
+          <form onSubmit={handleManualSubmit} className="space-y-5">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Start Time
                 </label>
-                <div className="relative">
-                  <Input
-                    type="time"
-                    value={manualStartTime}
-                    onChange={(e) => setManualStartTime(e.target.value)}
-                    className="bg-background"
-                  />
-                  {!manualStartTime && (
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
-                      09:00
-                    </span>
-                  )}
-                </div>
+                <Input
+                  type="time"
+                  value={manualStartTime}
+                  onChange={(e) => setManualStartTime(e.target.value)}
+                  className="bg-background h-10"
+                  placeholder="09:00"
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   End Time
                 </label>
-                <div className="relative">
-                  <Input
-                    type="time"
-                    value={manualEndTime}
-                    onChange={(e) => setManualEndTime(e.target.value)}
-                    className="bg-background"
-                  />
-                  {!manualEndTime && (
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
-                      17:00
-                    </span>
-                  )}
-                </div>
+                <Input
+                  type="time"
+                  value={manualEndTime}
+                  onChange={(e) => setManualEndTime(e.target.value)}
+                  className="bg-background h-10"
+                  placeholder="17:00"
+                />
               </div>
             </div>
 
@@ -308,7 +294,7 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
             )}
 
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 Tag (optional)
               </label>
               <TagSelect
@@ -324,7 +310,7 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
             <Button
               type="submit"
               variant="gradient"
-              className="w-full gap-2"
+              className="w-full gap-2 h-10"
               disabled={isSaving || !manualStartTime || !manualEndTime}
             >
               <Plus className="w-4 h-4" />
