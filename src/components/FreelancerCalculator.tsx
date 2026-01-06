@@ -8,25 +8,14 @@ import { CurrencySelect } from "./CurrencySelect";
 import { HourlyRateInput } from "./HourlyRateInput";
 import { SummaryCard } from "./SummaryCard";
 import { InvoiceDownload } from "./InvoiceDownload";
-import { MonthlyPeriodCard } from "./MonthlyPeriodCard";
-import { CloseMonthDialog } from "./CloseMonthDialog";
-import { ProjectFilter } from "./ProjectSelect";
 import { TimerWidget } from "./TimerWidget";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Button } from "@/components/ui/button";
-import { Clock, DollarSign, Calculator, Trash2, LogOut, Archive, History } from "lucide-react";
+import { Clock, DollarSign, Calculator, Trash2, LogOut } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-
-interface MonthlyPeriod {
-  id: string;
-  name: string;
-  month: number;
-  year: number;
-  isClosed: boolean;
-}
 
 export function FreelancerCalculator() {
   const { user, signOut } = useAuth();
@@ -35,87 +24,55 @@ export function FreelancerCalculator() {
   const [hourlyRate, setHourlyRate] = useState<string>("");
   const [currency, setCurrency] = useState<Currency>(CURRENCIES[0]);
   const [isLoading, setIsLoading] = useState(true);
-  const [periods, setPeriods] = useState<MonthlyPeriod[]>([]);
-  const [periodEntries, setPeriodEntries] = useState<Record<string, TimeEntry[]>>({});
-  const [showCloseDialog, setShowCloseDialog] = useState(false);
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
-  const [projects, setProjects] = useState<string[]>([]);
-  const [projectFilter, setProjectFilter] = useState<string>('');
+  const [tags, setTags] = useState<string[]>([]);
 
   // Load user's data from database
   useEffect(() => {
     if (!user) return;
 
     const loadData = async () => {
-      // Load periods
-      const { data: periodsData } = await supabase
-        .from("monthly_periods")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("year", { ascending: false })
-        .order("month", { ascending: false });
+      try {
+        // Load all time entries
+        const { data: entriesData, error } = await supabase
+          .from("time_entries")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
 
-      if (periodsData) {
-        setPeriods(
-          periodsData.map((p) => ({
-            id: p.id,
-            name: p.name,
-            month: p.month,
-            year: p.year,
-            isClosed: p.is_closed,
-          })),
-        );
-      }
+        if (error) {
+          console.error("Error loading entries:", error);
+          toast({
+            title: "Error loading entries",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else if (entriesData) {
+          const allTags = new Set<string>();
 
-      // Load all time entries
-      const { data: entriesData, error } = await supabase
-        .from("time_entries")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error loading entries:", error);
-        toast({
-          title: "Error loading entries",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else if (entriesData) {
-        // Separate current entries (no period) from period entries
-        const current: TimeEntry[] = [];
-        const byPeriod: Record<string, TimeEntry[]> = {};
-        const allProjects = new Set<string>();
-
-        entriesData.forEach((entry) => {
-          const mappedEntry: TimeEntry = {
-            id: entry.id,
-            value: entry.value,
-            decimalHours: Number(entry.decimal_hours),
-            createdAt: new Date(entry.created_at),
-            project: entry.project || undefined,
-          };
-
-          if (entry.project) {
-            allProjects.add(entry.project);
-          }
-
-          if (entry.period_id) {
-            if (!byPeriod[entry.period_id]) {
-              byPeriod[entry.period_id] = [];
+          const mappedEntries: TimeEntry[] = entriesData.map((entry) => {
+            if (entry.tag) {
+              allTags.add(entry.tag);
             }
-            byPeriod[entry.period_id].push(mappedEntry);
-          } else {
-            current.push(mappedEntry);
-          }
-        });
 
-        setEntries(current);
-        setPeriodEntries(byPeriod);
-        setProjects(Array.from(allProjects).sort());
+            return {
+              id: entry.id,
+              value: entry.value,
+              decimalHours: Number(entry.decimal_hours),
+              createdAt: new Date(entry.created_at),
+              tag: entry.tag || undefined,
+            };
+          });
+
+          setEntries(mappedEntries);
+          setTags(Array.from(allTags).sort());
+        }
+      } catch (err) {
+        console.error("Error in loadData:", err);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     const loadProfile = async () => {
@@ -158,33 +115,16 @@ export function FreelancerCalculator() {
     return () => clearTimeout(debounce);
   }, [currency, hourlyRate, user, isLoading]);
 
-  // Filtered entries for display
-  const filteredEntries = useMemo(() => {
-    if (!projectFilter) return entries;
-    return entries.filter(e => e.project === projectFilter);
-  }, [entries, projectFilter]);
-
   const totalDecimalHours = entries.reduce((sum, entry) => sum + entry.decimalHours, 0);
-  const currentMonthEarnings = totalDecimalHours * (parseFloat(hourlyRate) || 0);
+  const totalEarnings = totalDecimalHours * (parseFloat(hourlyRate) || 0);
 
-  const handleAddProject = (project: string) => {
-    if (!projects.includes(project)) {
-      setProjects(prev => [...prev, project].sort());
+  const handleAddTag = (tag: string) => {
+    if (!tags.includes(tag)) {
+      setTags(prev => [...prev, tag].sort());
     }
   };
 
-  const handleDeleteProject = (project: string) => {
-    setProjects(prev => prev.filter(p => p !== project));
-    if (projectFilter === project) {
-      setProjectFilter('');
-    }
-    toast({
-      title: "Project deleted",
-      description: `"${project}" has been removed`,
-    });
-  };
-
-  const handleAddEntry = async (value: string, decimalHours: number, project?: string) => {
+  const handleAddEntry = async (value: string, decimalHours: number, tag?: string) => {
     if (!user) return;
 
     const { data, error } = await supabase
@@ -193,7 +133,7 @@ export function FreelancerCalculator() {
         user_id: user.id,
         value,
         decimal_hours: decimalHours,
-        project: project || null,
+        tag: tag || null,
       })
       .select()
       .single();
@@ -212,59 +152,18 @@ export function FreelancerCalculator() {
       value: data.value,
       decimalHours: Number(data.decimal_hours),
       createdAt: new Date(data.created_at),
-      project: data.project || undefined,
+      tag: data.tag || undefined,
     };
     setEntries((prev) => [newEntry, ...prev]);
     
-    if (project && !projects.includes(project)) {
-      setProjects(prev => [...prev, project].sort());
+    if (tag && !tags.includes(tag)) {
+      setTags(prev => [...prev, tag].sort());
     }
   };
 
   // Handler for timer widget - saves time and shows toast
-  const handleTimerSave = async (decimalHours: number, displayValue: string, project?: string) => {
-    await handleAddEntry(displayValue, decimalHours, project);
-  };
-
-  const handleAddEntryToPeriod = async (periodId: string, value: string, decimalHours: number) => {
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from("time_entries")
-      .insert({
-        user_id: user.id,
-        value,
-        decimal_hours: decimalHours,
-        period_id: periodId,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      toast({
-        title: "Error adding entry",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const newEntry: TimeEntry = {
-      id: data.id,
-      value: data.value,
-      decimalHours: Number(data.decimal_hours),
-      createdAt: new Date(data.created_at),
-    };
-
-    setPeriodEntries((prev) => ({
-      ...prev,
-      [periodId]: [newEntry, ...(prev[periodId] || [])],
-    }));
-
-    toast({
-      title: "Entry added",
-      description: `Added ${decimalToHHMMSS(decimalHours)}`,
-    });
+  const handleTimerSave = async (decimalHours: number, displayValue: string, tag?: string) => {
+    await handleAddEntry(displayValue, decimalHours, tag);
   };
 
   const handleRemoveEntry = async (id: string) => {
@@ -282,28 +181,10 @@ export function FreelancerCalculator() {
     setEntries((prev) => prev.filter((entry) => entry.id !== id));
   };
 
-  const handleRemoveEntryFromPeriod = async (periodId: string, entryId: string) => {
-    const { error } = await supabase.from("time_entries").delete().eq("id", entryId);
-
-    if (error) {
-      toast({
-        title: "Error removing entry",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setPeriodEntries((prev) => ({
-      ...prev,
-      [periodId]: prev[periodId]?.filter((entry) => entry.id !== entryId) || [],
-    }));
-  };
-
   const handleClearAll = async () => {
     if (!user) return;
 
-    const { error } = await supabase.from("time_entries").delete().eq("user_id", user.id).is("period_id", null);
+    const { error } = await supabase.from("time_entries").delete().eq("user_id", user.id);
 
     if (error) {
       toast({
@@ -317,101 +198,6 @@ export function FreelancerCalculator() {
     setEntries([]);
     toast({
       title: "All entries cleared",
-    });
-  };
-
-  const handleCloseMonth = async (name: string, month: number, year: number) => {
-    if (!user || entries.length === 0) {
-      toast({
-        title: "No entries to close",
-        description: "Add some time entries before closing the month.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Create the period
-    const { data: periodData, error: periodError } = await supabase
-      .from("monthly_periods")
-      .insert({
-        user_id: user.id,
-        name,
-        month,
-        year,
-        is_closed: true,
-        closed_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (periodError) {
-      toast({
-        title: "Error closing month",
-        description: periodError.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Move current entries to the period
-    const entryIds = entries.map((e) => e.id);
-    const { error: updateError } = await supabase
-      .from("time_entries")
-      .update({ period_id: periodData.id })
-      .in("id", entryIds);
-
-    if (updateError) {
-      toast({
-        title: "Error moving entries",
-        description: updateError.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Update local state
-    const newPeriod: MonthlyPeriod = {
-      id: periodData.id,
-      name: periodData.name,
-      month: periodData.month,
-      year: periodData.year,
-      isClosed: periodData.is_closed,
-    };
-
-    setPeriods((prev) => [newPeriod, ...prev]);
-    setPeriodEntries((prev) => ({
-      ...prev,
-      [periodData.id]: entries,
-    }));
-    setEntries([]);
-
-    toast({
-      title: "Month closed",
-      description: `${name} has been saved with ${entryIds.length} entries.`,
-    });
-  };
-
-  const handleDeletePeriod = async (periodId: string) => {
-    const { error } = await supabase.from("monthly_periods").delete().eq("id", periodId);
-
-    if (error) {
-      toast({
-        title: "Error deleting period",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setPeriods((prev) => prev.filter((p) => p.id !== periodId));
-    setPeriodEntries((prev) => {
-      const updated = { ...prev };
-      delete updated[periodId];
-      return updated;
-    });
-
-    toast({
-      title: "Period deleted",
     });
   };
 
@@ -444,8 +230,6 @@ export function FreelancerCalculator() {
                   entries={entries}
                   hourlyRate={hourlyRate}
                   currency={currency}
-                  totalDecimalHours={totalDecimalHours}
-                  totalEarnings={currentMonthEarnings}
                   userName={user?.user_metadata?.full_name}
                 />
               </div>
@@ -460,8 +244,6 @@ export function FreelancerCalculator() {
               entries={entries}
               hourlyRate={hourlyRate}
               currency={currency}
-              totalDecimalHours={totalDecimalHours}
-              totalEarnings={currentMonthEarnings}
               userName={user?.user_metadata?.full_name}
             />
           </div>
@@ -484,7 +266,7 @@ export function FreelancerCalculator() {
           {/* Summary Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 animate-fade-in">
             <SummaryCard
-              title="Current Month Hours"
+              title="Total Hours"
               value={decimalToHHMMSS(totalDecimalHours)}
               subtitle={`${entries.length} entries logged`}
               icon={<Clock className="w-6 h-6" />}
@@ -498,16 +280,16 @@ export function FreelancerCalculator() {
               variant="default"
             />
             <SummaryCard
-              title="Current Month Earnings"
-              value={formatCurrency(currentMonthEarnings, currency.symbol)}
+              title="Total Earnings"
+              value={formatCurrency(totalEarnings, currency.symbol)}
               subtitle={`${entries.length} entries logged`}
               icon={<Calculator className="w-6 h-6" />}
               variant="default"
             />
             <SummaryCard
-              title="Monthly Total"
-              value={formatCurrency(currentMonthEarnings, currency.symbol)}
-              subtitle="current period"
+              title="Grand Total"
+              value={formatCurrency(totalEarnings, currency.symbol)}
+              subtitle="all time"
               icon={<Calculator className="w-6 h-6" />}
               variant="primary"
             />
@@ -521,8 +303,8 @@ export function FreelancerCalculator() {
             </h2>
             <TimerWidget
               onSaveTime={handleTimerSave}
-              projects={projects}
-              onAddProject={handleAddProject}
+              tags={tags}
+              onAddTag={handleAddTag}
             />
           </div>
 
@@ -534,58 +316,36 @@ export function FreelancerCalculator() {
               style={{ animationDelay: "200ms" }}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4">
-                <h2 className="text-base sm:text-lg font-display font-semibold text-foreground">Current Month Entries</h2>
+                <h2 className="text-base sm:text-lg font-display font-semibold text-foreground">Time Entries</h2>
                 <div className="flex items-center gap-2">
                   {entries.length > 0 && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowCloseDialog(true)}
-                        className="text-primary border-primary/50 hover:bg-primary/10 text-xs sm:text-sm"
-                      >
-                        <Archive className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-                        <span className="hidden xs:inline">Close Month</span>
-                        <span className="xs:hidden">Close</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowClearAllDialog(true)}
-                        className="text-muted-foreground hover:text-destructive text-xs sm:text-sm"
-                      >
-                        <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-                        Clear
-                      </Button>
-                    </>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowClearAllDialog(true)}
+                      className="text-muted-foreground hover:text-destructive text-xs sm:text-sm"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
+                      Clear All
+                    </Button>
                   )}
                 </div>
               </div>
               <div className="space-y-4">
                 <TimeEntryInput 
                   format={timeFormat} 
-                  onAdd={async (value, decimalHours, project) => {
-                    await handleAddEntry(value, decimalHours, project);
+                  onAdd={async (value, decimalHours, tag) => {
+                    await handleAddEntry(value, decimalHours, tag);
                     toast({
                       title: "Entry added",
-                      description: `Added ${decimalToHHMMSS(decimalHours)}${project ? ` to ${project}` : ''}`,
+                      description: `Added ${decimalToHHMMSS(decimalHours)}${tag ? ` with tag "${tag}"` : ''}`,
                     });
                   }}
-                  projects={projects}
-                  onAddProject={handleAddProject}
-                  showProjectSelect={true}
+                  tags={tags}
+                  onAddTag={handleAddTag}
+                  showTagSelect={true}
                 />
-                {projects.length > 0 && (
-                  <div className="pt-1">
-                    <ProjectFilter 
-                      value={projectFilter} 
-                      onChange={setProjectFilter} 
-                      projects={projects}
-                      onDeleteProject={handleDeleteProject}
-                    />
-                  </div>
-                )}
-                <TimeEntryList entries={filteredEntries} format={timeFormat} onRemove={handleRemoveEntry} />
+                <TimeEntryList entries={entries} format={timeFormat} onRemove={handleRemoveEntry} />
               </div>
             </div>
 
@@ -624,7 +384,7 @@ export function FreelancerCalculator() {
                         <div className="flex justify-between">
                           <span className="font-medium text-foreground">Total</span>
                           <span className="font-bold text-primary">
-                            {formatCurrency(currentMonthEarnings, currency.symbol)}
+                            {formatCurrency(totalEarnings, currency.symbol)}
                           </span>
                         </div>
                       </div>
@@ -634,31 +394,6 @@ export function FreelancerCalculator() {
               </div>
             </div>
           </div>
-
-          {/* Monthly History */}
-          {periods.length > 0 && (
-            <div className="animate-slide-up" style={{ animationDelay: "400ms" }}>
-              <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                <History className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
-                <h2 className="text-base sm:text-lg font-display font-semibold text-foreground">Monthly History</h2>
-              </div>
-              <div className="space-y-3">
-                {periods.map((period) => (
-                  <MonthlyPeriodCard
-                    key={period.id}
-                    period={period}
-                    entries={periodEntries[period.id] || []}
-                    hourlyRate={hourlyRate}
-                    currency={currency}
-                    timeFormat={timeFormat}
-                    onAddEntry={(value, hours) => handleAddEntryToPeriod(period.id, value, hours)}
-                    onRemoveEntry={(entryId) => handleRemoveEntryFromPeriod(period.id, entryId)}
-                    onDeletePeriod={handleDeletePeriod}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </main>
 
@@ -669,15 +404,12 @@ export function FreelancerCalculator() {
         </div>
       </footer>
 
-      {/* Close Month Dialog */}
-      <CloseMonthDialog open={showCloseDialog} onOpenChange={setShowCloseDialog} onConfirm={handleCloseMonth} />
-
       {/* Clear All Confirmation */}
       <ConfirmDialog
         open={showClearAllDialog}
         onOpenChange={setShowClearAllDialog}
         title="Clear All Entries"
-        description={`Are you sure you want to clear all ${entries.length} entries from the current month? This action cannot be undone.`}
+        description={`Are you sure you want to clear all ${entries.length} entries? This action cannot be undone.`}
         confirmText="Clear All"
         onConfirm={() => {
           handleClearAll();

@@ -87,7 +87,7 @@ export type Database = {
           description: string | null
           id: string
           period_id: string | null
-          project: string | null
+          tag: string | null
           user_id: string
           value: string
         }
@@ -97,7 +97,7 @@ export type Database = {
           description?: string | null
           id?: string
           period_id?: string | null
-          project?: string | null
+          tag?: string | null
           user_id: string
           value: string
         }
@@ -107,7 +107,7 @@ export type Database = {
           description?: string | null
           id?: string
           period_id?: string | null
-          project?: string | null
+          tag?: string | null
           user_id?: string
           value?: string
         }
