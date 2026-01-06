@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { TimeFormat, TimeEntry, Currency, CURRENCIES } from "@/types/freelancer";
 import { decimalToHHMMSS, formatCurrency } from "@/utils/timeUtils";
 
-
 import { TimeEntryList } from "./TimeEntryList";
 import { CurrencySelect } from "./CurrencySelect";
 import { HourlyRateInput } from "./HourlyRateInput";
@@ -120,7 +119,7 @@ export function FreelancerCalculator() {
 
   const handleAddTag = (tag: string) => {
     if (!tags.includes(tag)) {
-      setTags(prev => [...prev, tag].sort());
+      setTags((prev) => [...prev, tag].sort());
     }
   };
 
@@ -155,9 +154,9 @@ export function FreelancerCalculator() {
       tag: data.tag || undefined,
     };
     setEntries((prev) => [newEntry, ...prev]);
-    
+
     if (tag && !tags.includes(tag)) {
-      setTags(prev => [...prev, tag].sort());
+      setTags((prev) => [...prev, tag].sort());
     }
   };
 
@@ -233,7 +232,13 @@ export function FreelancerCalculator() {
                   userName={user?.user_metadata?.full_name}
                 />
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setShowSignOutDialog(true)} title="Sign out" className="h-8 w-8 sm:h-9 sm:w-9">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowSignOutDialog(true)}
+                title="Sign out"
+                className="h-8 w-8 sm:h-9 sm:w-9"
+              >
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
@@ -291,7 +296,7 @@ export function FreelancerCalculator() {
               value={formatCurrency(totalEarnings, currency.symbol)}
               subtitle="all time"
               icon={<Calculator className="w-6 h-6" />}
-              variant="primary"
+              variant="default"
             />
           </div>
 
@@ -301,11 +306,7 @@ export function FreelancerCalculator() {
               <Clock className="w-5 h-5 text-primary" />
               Track Your Time
             </h2>
-            <TimerWidget
-              onSaveTime={handleTimerSave}
-              tags={tags}
-              onAddTag={handleAddTag}
-            />
+            <TimerWidget onSaveTime={handleTimerSave} tags={tags} onAddTag={handleAddTag} />
           </div>
 
           {/* Input Section */}
