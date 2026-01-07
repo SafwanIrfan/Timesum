@@ -46,7 +46,7 @@ export function useSupportReminder(userId: string | undefined, entriesCount: num
       setTimeout(() => {
         toast({
           title: `🎉 ${milestone} entries logged!`,
-          description: "Thanks for sticking with us! Consider supporting the project if it's helping you.",
+          description: "Thanks for sticking with us! If you find this helpful you can support us.",
           duration: 8000,
           action: <ToastAction altText="Support" onClick={() => navigate('/support')}>Support</ToastAction>,
         });
@@ -74,7 +74,7 @@ export function useSupportReminder(userId: string | undefined, entriesCount: num
       setTimeout(() => {
         toast({
           title: `✨ ${milestone} tags created!`,
-          description: "You're getting organized! Love using Timesum? Consider supporting its development.",
+          description: "Thanks for sticking with us! If you find this helpful you can support us.",
           duration: 8000,
           action: <ToastAction altText="Support" onClick={() => navigate('/support')}>Support</ToastAction>,
         });
