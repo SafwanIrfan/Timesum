@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TimeEntry, Currency } from '@/types/freelancer';
 import { decimalToHHMMSS, formatCurrency } from '@/utils/timeUtils';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FileDown, CheckSquare } from 'lucide-react';
+import { FileDown, CheckSquare, Sparkles, Heart } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ export function InvoiceDownload({
   currency,
   userName,
 }: InvoiceDownloadProps) {
+  const navigate = useNavigate();
   const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set());
   const [isOpen, setIsOpen] = useState(false);
 
@@ -431,6 +433,31 @@ export function InvoiceDownload({
               </div>
             </div>
           )}
+        </div>
+
+        {/* Support Reminder */}
+        <div className="p-3 bg-gradient-to-r from-primary/10 to-accent/20 border border-primary/20 rounded-lg">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+              <Heart className="w-5 h-5 text-primary animate-pulse" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground">Enjoying Timesum?</p>
+              <p className="text-xs text-muted-foreground">Your support helps keep this tool free!</p>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                setIsOpen(false);
+                navigate('/support');
+              }}
+              className="flex-shrink-0 gap-1.5 border-primary/30 hover:bg-primary/10"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Support
+            </Button>
+          </div>
         </div>
 
         <Button 
