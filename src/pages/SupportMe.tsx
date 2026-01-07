@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, Copy, Check, Mail, ExternalLink, Coffee, ArrowLeft } from "lucide-react";
+import { Heart, Copy, Check, Mail, ExternalLink, Coffee, ArrowLeft, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -20,19 +20,9 @@ const SupportMe = () => {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const CopyButton = ({ value, fieldId }: { value: string; fieldId: string }) => (
-    <Button variant="ghost" size="icon" onClick={() => copyToClipboard(value, fieldId)} className="h-8 w-8 shrink-0">
-      {copiedField === fieldId ? (
-        <Check className="w-4 h-4 text-success" />
-      ) : (
-        <Copy className="w-4 h-4 text-muted-foreground" />
-      )}
-    </Button>
-  );
-
   // Pakistan flag component
   const PakistanFlag = () => (
-    <svg className="w-5 h-5" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+    <svg className="w-6 h-6" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
       <path fill="#006600" d="M32 5H4a4 4 0 0 0-4 4v18a4 4 0 0 0 4 4h28a4 4 0 0 0 4-4V9a4 4 0 0 0-4-4z" />
       <path fill="#FFF" d="M9 5H4a4 4 0 0 0-4 4v18a4 4 0 0 0 4 4h5V5z" />
       <path fill="#FFF" d="M22.087 20.797a5.5 5.5 0 1 1-1.162-8.428 4.5 4.5 0 1 0 1.162 8.428z" />
@@ -44,7 +34,7 @@ const SupportMe = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">
@@ -60,159 +50,95 @@ const SupportMe = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 max-w-lg">
         {/* Hero Section */}
-        <div className="text-center space-y-3 mb-6 animate-fade-in">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary shadow-glow mb-2">
-            <Heart className="w-8 h-8 text-primary-foreground" />
+        <div className="text-center space-y-4 mb-8 animate-fade-in">
+          <div className="relative inline-flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 blur-xl opacity-30 animate-pulse" />
+            <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-pink-500 via-red-500 to-orange-400 shadow-2xl flex items-center justify-center">
+              <Heart className="w-10 h-10 text-white drop-shadow-lg" />
+            </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight">Support My Work</h1>
-          <p className="text-muted-foreground text-base max-w-md mx-auto">
-            If you find this app helpful, consider supporting its development 💖
+          <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text">
+            Support My Work
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
+            If you find this app helpful, your support keeps it alive! 💖
           </p>
         </div>
 
-        {/* Payment Methods Grid */}
-        <div className="grid md:grid-cols-2 gap-4 mb-4">
-          {/* Pakistan - Raast */}
-          <Card className="overflow-hidden border-2 hover:border-success/50 transition-colors animate-slide-up">
-            <CardHeader className="bg-gradient-to-r from-success/10 to-accent/10 py-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-success/20">
+        {/* Payment Methods - Stacked for focus */}
+        <div className="space-y-4">
+          {/* Raast ID - Pakistan */}
+          <Card className="overflow-hidden border-2 border-success/30 hover:border-success/60 transition-all duration-300 animate-slide-up shadow-lg hover:shadow-xl bg-gradient-to-br from-success/5 to-transparent">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 rounded-xl bg-success/20 shadow-inner">
                   <PakistanFlag />
                 </div>
-                <CardTitle className="text-lg">Pakistan</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="space-y-3">
-                <div className="relative group">
-                  <Button
-                    className="w-full gap-3 h-14 text-lg font-bold bg-[#006600] hover:bg-[#007700] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden"
-                    onClick={() => copyToClipboard("03343461801", "raast")}
-                  >
-                    {/* Animated background shimmer */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    
-                    <span className="relative z-10 flex items-center gap-2">
-                      Raast ID: <code className="font-mono">03343461801</code>
-                    </span>
-                    {copiedField === "raast" ? (
-                      <Check className="w-5 h-5 ml-auto text-white" />
-                    ) : (
-                      <Copy className="w-5 h-5 ml-auto opacity-70" />
-                    )}
-                  </Button>
+                <div>
+                  <h3 className="font-bold text-lg">Pakistan</h3>
+                  <p className="text-xs text-muted-foreground">Instant · No fees</p>
                 </div>
-                <ul className="text-xs text-muted-foreground space-y-1 pl-1">
-                  <li className="flex items-start gap-2">
-                    <span className="text-success">•</span>
-                    <span>Instant transfer</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-success">•</span>
-                    <span>No fees</span>
-                  </li>
-                </ul>
               </div>
+              
+              <Button
+                className="w-full gap-3 h-14 text-base font-bold bg-gradient-to-r from-[#006600] to-[#008800] hover:from-[#007700] hover:to-[#009900] text-white shadow-lg hover:shadow-success/30 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group rounded-xl"
+                onClick={() => copyToClipboard("03343461801", "raast")}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <span className="relative z-10 flex items-center gap-2">
+                  <span className="text-white/80 text-sm">Raast ID:</span>
+                  <code className="font-mono text-lg tracking-wide">03343461801</code>
+                </span>
+                {copiedField === "raast" ? (
+                  <Check className="w-5 h-5 ml-auto text-white animate-scale-in" />
+                ) : (
+                  <Copy className="w-5 h-5 ml-auto opacity-70 group-hover:opacity-100 transition-opacity" />
+                )}
+              </Button>
             </CardContent>
           </Card>
 
-          {/* International */}
+          {/* Buy Me a Coffee - International */}
           <Card
-            className="overflow-hidden border-2 hover:border-primary/50 transition-colors animate-slide-up"
+            className="overflow-hidden border-2 border-[#FFDD00]/40 hover:border-[#FFDD00]/70 transition-all duration-300 animate-slide-up shadow-lg hover:shadow-xl bg-gradient-to-br from-[#FFDD00]/10 to-transparent relative"
             style={{ animationDelay: "0.1s" }}
           >
-            <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 py-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/20 text-xl">🌍</div>
-                <CardTitle className="text-lg">International</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 space-y-3">
-              {/* Buy Me a Coffee - Primary with attention-grabbing design */}
-              <div className="relative">
-                {/* Recommended badge */}
-                <div className="absolute -top-2 -right-2 z-10">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-destructive text-destructive-foreground shadow-md animate-pulse">
-                    ⭐ Recommended
-                  </span>
+            {/* Recommended badge */}
+            <div className="absolute -top-0 right-4 z-10">
+              <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-b-lg text-xs font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg">
+                <Sparkles className="w-3 h-3" />
+                Recommended
+              </span>
+            </div>
+            
+            <CardContent className="p-5 pt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 rounded-xl bg-[#FFDD00]/30 shadow-inner">
+                  <span className="text-2xl">🌍</span>
                 </div>
-                
-                <Button
-                  className="w-full gap-3 h-14 text-lg font-bold bg-[#FFDD00] hover:bg-[#FFDD00]/90 text-black shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group"
-                  onClick={() => window.open("https://buymeacoffee.com/mohdsafwanj", "_blank")}
-                >
-                  {/* Animated background shimmer */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                  
-                  {/* Coffee icon with bounce animation */}
-                  <Coffee className="w-6 h-6 animate-bounce" style={{ animationDuration: '2s' }} />
-                  <span className="relative z-10">Buy Me a Coffee</span>
-                  <ExternalLink className="w-4 h-4 ml-auto opacity-60" />
-                </Button>
-                
-                <ul className="text-xs text-muted-foreground space-y-1 pl-1 mt-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#FFDD00]">✓</span>
-                    <span>Fast & easy</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#FFDD00]">✓</span>
-                    <span>Card payments accepted</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* ElevatePay - Interactive Blue Button */}
-              <div className="pt-2 border-t border-border/50">
-                <p className="text-sm font-medium mb-2">Or via ElevatePay</p>
-                <div className="relative group">
-                  <Button
-                    className="w-full gap-3 h-12 text-base font-bold bg-[#0066CC] hover:bg-[#0077DD] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden"
-                    onClick={() => copyToClipboard("+923343461801", "elevate")}
-                  >
-                    {/* Animated background shimmer */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    
-                    <span className="relative z-10 flex items-center gap-2">
-                      <code className="font-mono">+923343461801</code>
-                    </span>
-                    {copiedField === "elevate" ? (
-                      <Check className="w-5 h-5 ml-auto text-white" />
-                    ) : (
-                      <Copy className="w-5 h-5 ml-auto opacity-70" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full mt-1 text-xs text-muted-foreground hover:text-primary"
-                    onClick={() => window.open("https://onelink.to/elevatepay", "_blank")}
-                  >
-                    <ExternalLink className="w-3 h-3 mr-1" />
-                    Download ElevatePay App
-                  </Button>
+                <div>
+                  <h3 className="font-bold text-lg">International</h3>
+                  <p className="text-xs text-muted-foreground">Fast · Card payments</p>
                 </div>
-                <ul className="text-xs text-muted-foreground space-y-1 pl-1 mt-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    <span>ElevatePay to ElevatePay transfers only</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    <span>App required</span>
-                  </li>
-                </ul>
               </div>
+              
+              <Button
+                className="w-full gap-3 h-14 text-base font-bold bg-gradient-to-r from-[#FFDD00] to-[#FFC400] hover:from-[#FFE333] hover:to-[#FFD000] text-black shadow-lg hover:shadow-[#FFDD00]/30 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group rounded-xl"
+                onClick={() => window.open("https://buymeacoffee.com/mohdsafwanj", "_blank")}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <Coffee className="w-6 h-6 relative z-10 group-hover:animate-bounce" style={{ animationDuration: '1s' }} />
+                <span className="relative z-10 font-bold">Buy Me a Coffee</span>
+                <ExternalLink className="w-4 h-4 ml-auto opacity-60 group-hover:opacity-100 transition-opacity" />
+              </Button>
             </CardContent>
           </Card>
-        </div>
 
-        {/* Contact & Thank You - Combined row */}
-        <div className="flex flex-col sm:flex-row gap-4 items-stretch">
+          {/* Contact Card */}
           <Card
-            className="overflow-hidden border hover:border-accent/50 transition-colors animate-slide-up flex-1"
+            className="overflow-hidden border hover:border-accent/50 transition-all duration-300 animate-slide-up"
             style={{ animationDelay: "0.2s" }}
           >
             <CardContent className="p-4">
@@ -222,15 +148,31 @@ const SupportMe = () => {
                     <Mail className="w-4 h-4 text-accent-foreground" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm text-muted-foreground">Get in touch</p>
-                    <code className="text-sm font-mono">mohdsafwan2k5@gmail.com</code>
+                    <p className="text-xs text-muted-foreground">Questions? Get in touch</p>
+                    <code className="text-sm font-mono text-foreground">mohdsafwan2k5@gmail.com</code>
                   </div>
                 </div>
-                <CopyButton value="mohdsafwan2k5@gmail.com" fieldId="email" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => copyToClipboard("mohdsafwan2k5@gmail.com", "email")}
+                  className="h-8 w-8 shrink-0"
+                >
+                  {copiedField === "email" ? (
+                    <Check className="w-4 h-4 text-success" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Thank you footer */}
+        <p className="text-center text-sm text-muted-foreground mt-8 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          Thank you for your support! Every contribution helps. 🙏
+        </p>
       </main>
     </div>
   );
