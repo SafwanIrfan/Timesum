@@ -156,8 +156,11 @@ const SupportMe = () => {
                   </li>
                 </ul>
               </div>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Contact & Thank You - Combined row */}
+        {/* Contact Section */}
         <div className="flex flex-col sm:flex-row gap-4 items-stretch">
           <Card
             className="overflow-hidden border hover:border-accent/50 transition-colors animate-slide-up flex-1"
