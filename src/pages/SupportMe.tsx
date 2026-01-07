@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, Globe, MapPin, Copy, Check, Eye, EyeOff, Mail, ExternalLink, Sparkles } from "lucide-react";
+import { Heart, Globe, MapPin, Copy, Check, Eye, EyeOff, Mail, ExternalLink, Sparkles, ArrowLeft, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -70,8 +70,14 @@ const SupportMe = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
-            ← Back to App
+          <Button 
+            variant="outline" 
+            onClick={() => navigate("/")} 
+            className="gap-2 h-10 px-4 bg-gradient-to-r from-primary/5 to-accent/10 border-primary/20 hover:border-primary/40 hover:from-primary/10 hover:to-accent/20 transition-all duration-300 group"
+          >
+            <ArrowLeft className="w-4 h-4 text-primary group-hover:-translate-x-1 transition-transform duration-300" />
+            <Home className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            <span className="font-medium">Back to App</span>
           </Button>
           <Heart className="w-5 h-5 text-destructive animate-pulse" />
         </div>
