@@ -24,14 +24,14 @@ const SupportMe = () => {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const MaskedInfo = ({ 
-    label, 
-    maskedValue, 
-    realValue, 
-    isRevealed, 
-    onToggle, 
-    fieldId 
-  }: { 
+  const MaskedInfo = ({
+    label,
+    maskedValue,
+    realValue,
+    isRevealed,
+    onToggle,
+    fieldId,
+  }: {
     label: string;
     maskedValue: string;
     realValue: string;
@@ -46,12 +46,7 @@ const SupportMe = () => {
           {isRevealed ? realValue : maskedValue}
         </code>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onToggle}
-            className="shrink-0"
-          >
+          <Button variant="outline" size="icon" onClick={onToggle} className="shrink-0">
             {isRevealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </Button>
           {isRevealed && (
@@ -66,9 +61,7 @@ const SupportMe = () => {
           )}
         </div>
       </div>
-      {!isRevealed && (
-        <p className="text-xs text-muted-foreground">Click the eye icon to reveal</p>
-      )}
+      {!isRevealed && <p className="text-xs text-muted-foreground">Click the eye icon to reveal</p>}
     </div>
   );
 
@@ -90,11 +83,10 @@ const SupportMe = () => {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-primary shadow-glow mb-4">
             <Sparkles className="w-10 h-10 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-tight">
-            Support My Work
-          </h1>
+          <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-tight">Support My Work</h1>
           <p className="text-muted-foreground text-lg max-w-md mx-auto">
-            If you find this app helpful, consider supporting its development. Every contribution helps keep this project alive! 💖
+            If you find this app helpful, consider supporting its development. Every contribution helps keep this
+            project alive! 💖
           </p>
         </div>
 
@@ -120,7 +112,8 @@ const SupportMe = () => {
                 <div className="space-y-2">
                   <p className="font-medium">Send via ElevatePay</p>
                   <p className="text-sm text-muted-foreground">
-                    ElevatePay lets you send money instantly and securely. Download the app, click send, and enter my mobile number.
+                    ElevatePay lets you send money instantly and securely. Download the app, click send, and enter my
+                    mobile number.
                   </p>
                   <Button
                     variant="outline"
@@ -135,9 +128,9 @@ const SupportMe = () => {
               </div>
 
               <MaskedInfo
-                label="ElevatePay Number:"
+                label="Mobile number for ElevatePay:"
                 maskedValue="+92 3XX XXX XX XX"
-                realValue="+92 334 346 1801"
+                realValue="+923343461801"
                 isRevealed={showElevateNumber}
                 onToggle={() => setShowElevateNumber(!showElevateNumber)}
                 fieldId="elevate"
@@ -146,7 +139,10 @@ const SupportMe = () => {
           </Card>
 
           {/* Pakistan Payments */}
-          <Card className="overflow-hidden border-2 hover:border-success/50 transition-colors animate-slide-up" style={{ animationDelay: "0.1s" }}>
+          <Card
+            className="overflow-hidden border-2 hover:border-success/50 transition-colors animate-slide-up"
+            style={{ animationDelay: "0.1s" }}
+          >
             <CardHeader className="bg-gradient-to-r from-success/10 to-accent/10">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-success/20">
@@ -194,7 +190,10 @@ const SupportMe = () => {
           </Card>
 
           {/* Contact Section */}
-          <Card className="overflow-hidden border-2 hover:border-accent/50 transition-colors animate-slide-up" style={{ animationDelay: "0.2s" }}>
+          <Card
+            className="overflow-hidden border-2 hover:border-accent/50 transition-colors animate-slide-up"
+            style={{ animationDelay: "0.2s" }}
+          >
             <CardHeader className="bg-gradient-to-r from-accent/10 to-muted/10">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-accent/20">
@@ -226,7 +225,8 @@ const SupportMe = () => {
               <Heart className="w-5 h-5 text-destructive fill-destructive animate-pulse" />
             </div>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Your contribution helps me continue building and improving this tool. I truly appreciate every bit of support!
+              Your contribution helps me continue building and improving this tool. I truly appreciate every bit of
+              support!
             </p>
           </div>
         </div>
