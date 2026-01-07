@@ -3,10 +3,10 @@ import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { ToastAction } from '@/components/ui/toast';
 
-// Milestones for entries: 10, 50, 100, 200, 500, 1000...
-const ENTRY_MILESTONES = [10, 50, 100, 200, 500, 1000];
-// Milestones for tags: 2, 5, 10, 20...
-const TAG_MILESTONES = [2, 5, 10, 20];
+// Milestones for entries: 10, 20, 30, 40, 50, 60...
+const ENTRY_MILESTONES = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200, 300, 500, 1000];
+// Milestones for tags: 2, 4, 6, 8, 10, 12...
+const TAG_MILESTONES = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30];
 
 const STORAGE_KEY = 'timesum_shown_milestones';
 
