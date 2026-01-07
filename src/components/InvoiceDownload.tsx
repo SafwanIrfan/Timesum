@@ -352,13 +352,14 @@ export function InvoiceDownload({
           <span className="sm:hidden">Invoice</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden p-0">
+        <DialogHeader className="px-6 pt-6 pb-0">
           <DialogTitle>Create Invoice</DialogTitle>
         </DialogHeader>
         
-        {/* Entry Selection */}
-        <div className="flex-1 min-h-0 space-y-4">
+        {/* Scrollable Content Area */}
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-4">
+          {/* Entry Selection Header */}
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               Select entries to include ({selectedEntryIds.size} of {entries.length})
@@ -374,7 +375,8 @@ export function InvoiceDownload({
             </div>
           </div>
 
-          <ScrollArea className="h-[200px] border rounded-lg">
+          {/* Entries List */}
+          <ScrollArea className="h-[180px] border rounded-lg">
             <div className="p-2 space-y-1">
               {entries.map((entry) => (
                 <label
@@ -407,7 +409,7 @@ export function InvoiceDownload({
 
           {/* Preview Summary */}
           {selectedEntries.length > 0 && (
-            <div className="p-4 border border-border rounded-lg bg-accent/30 space-y-3">
+            <div className="p-3 border border-border rounded-lg bg-accent/30 space-y-2">
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">Invoice Summary</h3>
@@ -417,7 +419,7 @@ export function InvoiceDownload({
                 </div>
               </div>
               
-              <div className="space-y-1.5 text-sm">
+              <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Hours</span>
                   <span className="font-medium font-mono">{decimalToHHMMSS(selectedTotalHours)}</span>
@@ -435,39 +437,42 @@ export function InvoiceDownload({
           )}
         </div>
 
-        {/* Support Reminder */}
-        <div className="p-3 bg-gradient-to-r from-primary/10 to-accent/20 border border-primary/20 rounded-lg">
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-              <Heart className="w-5 h-5 text-primary animate-pulse" />
+        {/* Footer - Fixed at Bottom */}
+        <div className="px-6 pb-6 pt-2 space-y-3 border-t border-border bg-background">
+          {/* Support Reminder */}
+          <div className="p-3 bg-gradient-to-r from-primary/10 to-accent/20 border border-primary/20 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 w-9 h-9 bg-primary/20 rounded-full flex items-center justify-center">
+                <Heart className="w-4 h-4 text-primary animate-pulse" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">Enjoying Timesum?</p>
+                <p className="text-xs text-muted-foreground">Your support keeps this tool free!</p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  setIsOpen(false);
+                  navigate('/support');
+                }}
+                className="flex-shrink-0 gap-1.5 border-primary/30 hover:bg-primary/10 h-8 text-xs"
+              >
+                <Sparkles className="w-3 h-3" />
+                Support
+              </Button>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground">Enjoying Timesum?</p>
-              <p className="text-xs text-muted-foreground">Your support helps keep this tool free!</p>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => {
-                setIsOpen(false);
-                navigate('/support');
-              }}
-              className="flex-shrink-0 gap-1.5 border-primary/30 hover:bg-primary/10"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Support
-            </Button>
           </div>
-        </div>
 
-        <Button 
-          onClick={handleDownload} 
-          className="w-full gap-2"
-          disabled={selectedEntries.length === 0}
-        >
-          <FileDown className="w-4 h-4" />
-          Download Invoice ({selectedEntries.length} entries)
-        </Button>
+          <Button 
+            onClick={handleDownload} 
+            className="w-full gap-2"
+            disabled={selectedEntries.length === 0}
+          >
+            <FileDown className="w-4 h-4" />
+            Download Invoice ({selectedEntries.length} entries)
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
