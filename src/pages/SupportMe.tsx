@@ -94,7 +94,6 @@ const SupportMe = () => {
                     {/* Animated background shimmer */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                     
-                    <PakistanFlag />
                     <span className="relative z-10 flex items-center gap-2">
                       Raast ID: <code className="font-mono">03343461801</code>
                     </span>
@@ -176,7 +175,6 @@ const SupportMe = () => {
                     {/* Animated background shimmer */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                     
-                    <span className="text-xl">💳</span>
                     <span className="relative z-10 flex items-center gap-2">
                       <code className="font-mono">+923343461801</code>
                     </span>
@@ -199,7 +197,7 @@ const SupportMe = () => {
                 <ul className="text-xs text-muted-foreground space-y-1 pl-1 mt-2">
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    <span>Lower fees</span>
+                    <span>ElevatePay to ElevatePay transfers only</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
