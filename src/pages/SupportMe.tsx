@@ -21,12 +21,7 @@ const SupportMe = () => {
   };
 
   const CopyButton = ({ value, fieldId }: { value: string; fieldId: string }) => (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => copyToClipboard(value, fieldId)}
-      className="h-8 w-8 shrink-0"
-    >
+    <Button variant="ghost" size="icon" onClick={() => copyToClipboard(value, fieldId)} className="h-8 w-8 shrink-0">
       {copiedField === fieldId ? (
         <Check className="w-4 h-4 text-success" />
       ) : (
@@ -38,10 +33,13 @@ const SupportMe = () => {
   // Pakistan flag component
   const PakistanFlag = () => (
     <svg className="w-5 h-5" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
-      <path fill="#006600" d="M32 5H4a4 4 0 0 0-4 4v18a4 4 0 0 0 4 4h28a4 4 0 0 0 4-4V9a4 4 0 0 0-4-4z"/>
-      <path fill="#FFF" d="M9 5H4a4 4 0 0 0-4 4v18a4 4 0 0 0 4 4h5V5z"/>
-      <path fill="#FFF" d="M22.087 20.797a5.5 5.5 0 1 1-1.162-8.428 4.5 4.5 0 1 0 1.162 8.428z"/>
-      <path fill="#FFF" d="M24.5 13.5l.862 2.654h2.792l-2.258 1.641.862 2.654-2.258-1.64-2.258 1.64.862-2.654-2.258-1.641h2.792z"/>
+      <path fill="#006600" d="M32 5H4a4 4 0 0 0-4 4v18a4 4 0 0 0 4 4h28a4 4 0 0 0 4-4V9a4 4 0 0 0-4-4z" />
+      <path fill="#FFF" d="M9 5H4a4 4 0 0 0-4 4v18a4 4 0 0 0 4 4h5V5z" />
+      <path fill="#FFF" d="M22.087 20.797a5.5 5.5 0 1 1-1.162-8.428 4.5 4.5 0 1 0 1.162 8.428z" />
+      <path
+        fill="#FFF"
+        d="M24.5 13.5l.862 2.654h2.792l-2.258 1.641.862 2.654-2.258-1.64-2.258 1.64.862-2.654-2.258-1.641h2.792z"
+      />
     </svg>
   );
 
@@ -110,12 +108,13 @@ const SupportMe = () => {
           </Card>
 
           {/* International */}
-          <Card className="overflow-hidden border-2 hover:border-primary/50 transition-colors animate-slide-up" style={{ animationDelay: "0.1s" }}>
+          <Card
+            className="overflow-hidden border-2 hover:border-primary/50 transition-colors animate-slide-up"
+            style={{ animationDelay: "0.1s" }}
+          >
             <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 py-3">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/20 text-xl">
-                  🌍
-                </div>
+                <div className="p-2 rounded-lg bg-primary/20 text-xl">🌍</div>
                 <CardTitle className="text-lg">International</CardTitle>
               </div>
             </CardHeader>
@@ -178,7 +177,10 @@ const SupportMe = () => {
 
         {/* Contact & Thank You - Combined row */}
         <div className="flex flex-col sm:flex-row gap-4 items-stretch">
-          <Card className="overflow-hidden border hover:border-accent/50 transition-colors animate-slide-up flex-1" style={{ animationDelay: "0.2s" }}>
+          <Card
+            className="overflow-hidden border hover:border-accent/50 transition-colors animate-slide-up flex-1"
+            style={{ animationDelay: "0.2s" }}
+          >
             <CardContent className="p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
@@ -194,13 +196,6 @@ const SupportMe = () => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Thank You Note */}
-          <div className="flex items-center justify-center gap-2 p-4 bg-muted/30 rounded-lg animate-fade-in flex-1">
-            <Heart className="w-5 h-5 text-destructive fill-destructive animate-pulse" />
-            <span className="text-sm font-medium">Thank you for your support!</span>
-            <Heart className="w-5 h-5 text-destructive fill-destructive animate-pulse" />
-          </div>
         </div>
       </main>
     </div>
