@@ -20,6 +20,7 @@ preloadImage.src = logo;
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useSupportReminder } from "@/hooks/useSupportReminder";
 
 export function FreelancerCalculator() {
   const { user, signOut } = useAuth();
@@ -102,6 +103,9 @@ export function FreelancerCalculator() {
     loadData();
     loadProfile();
   }, [user]);
+
+  // Support reminder based on milestones
+  useSupportReminder(user?.id, entries.length, tags.length);
 
   // Save currency and rate to profile when changed
   useEffect(() => {
