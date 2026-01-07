@@ -13,6 +13,10 @@ import { Button } from "@/components/ui/button";
 import { Clock, DollarSign, Calculator, Trash2, LogOut, Gift } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.png";
+
+// Preload logo to prevent flash
+const preloadImage = new Image();
+preloadImage.src = logo;
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
