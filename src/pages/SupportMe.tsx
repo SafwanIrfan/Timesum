@@ -86,12 +86,24 @@ const SupportMe = () => {
             </CardHeader>
             <CardContent className="p-4">
               <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3 p-3 bg-muted/50 rounded-lg">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium mb-1">Raast ID</p>
-                    <code className="text-base font-mono font-medium">03343461801</code>
-                  </div>
-                  <CopyButton value="03343461801" fieldId="raast" />
+                <div className="relative group">
+                  <Button
+                    className="w-full gap-3 h-14 text-lg font-bold bg-[#006600] hover:bg-[#007700] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden"
+                    onClick={() => copyToClipboard("03343461801", "raast")}
+                  >
+                    {/* Animated background shimmer */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                    
+                    <PakistanFlag />
+                    <span className="relative z-10 flex items-center gap-2">
+                      Raast ID: <code className="font-mono">03343461801</code>
+                    </span>
+                    {copiedField === "raast" ? (
+                      <Check className="w-5 h-5 ml-auto text-white" />
+                    ) : (
+                      <Copy className="w-5 h-5 ml-auto opacity-70" />
+                    )}
+                  </Button>
                 </div>
                 <ul className="text-xs text-muted-foreground space-y-1 pl-1">
                   <li className="flex items-start gap-2">
@@ -153,24 +165,36 @@ const SupportMe = () => {
                 </ul>
               </div>
 
-              {/* ElevatePay - Secondary */}
+              {/* ElevatePay - Interactive Blue Button */}
               <div className="pt-2 border-t border-border/50">
                 <p className="text-sm font-medium mb-2">Or via ElevatePay</p>
-                <div className="flex items-center justify-between gap-3 p-2 bg-muted/50 rounded-lg">
-                  <div className="min-w-0">
-                    <code className="text-sm font-mono font-medium">+923343461801</code>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <CopyButton value="+923343461801" fieldId="elevate" />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => window.open("https://onelink.to/elevatepay", "_blank")}
-                    >
-                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                    </Button>
-                  </div>
+                <div className="relative group">
+                  <Button
+                    className="w-full gap-3 h-12 text-base font-bold bg-[#0066CC] hover:bg-[#0077DD] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden"
+                    onClick={() => copyToClipboard("+923343461801", "elevate")}
+                  >
+                    {/* Animated background shimmer */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                    
+                    <span className="text-xl">💳</span>
+                    <span className="relative z-10 flex items-center gap-2">
+                      <code className="font-mono">+923343461801</code>
+                    </span>
+                    {copiedField === "elevate" ? (
+                      <Check className="w-5 h-5 ml-auto text-white" />
+                    ) : (
+                      <Copy className="w-5 h-5 ml-auto opacity-70" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full mt-1 text-xs text-muted-foreground hover:text-primary"
+                    onClick={() => window.open("https://onelink.to/elevatepay", "_blank")}
+                  >
+                    <ExternalLink className="w-3 h-3 mr-1" />
+                    Download ElevatePay App
+                  </Button>
                 </div>
                 <ul className="text-xs text-muted-foreground space-y-1 pl-1 mt-2">
                   <li className="flex items-start gap-2">
