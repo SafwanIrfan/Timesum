@@ -10,7 +10,7 @@ import { InvoiceDownload } from "./InvoiceDownload";
 import { TimerWidget } from "./TimerWidget";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Button } from "@/components/ui/button";
-import { Clock, DollarSign, Calculator, Trash2, LogOut, Heart } from "lucide-react";
+import { Clock, DollarSign, Calculator, Trash2, LogOut, Gift } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.png";
 import { toast } from "@/hooks/use-toast";
@@ -280,13 +280,14 @@ export function FreelancerCalculator() {
                 userName={user?.user_metadata?.full_name}
               />
               <Button
-                variant="ghost"
-                size="icon"
+                variant="outline"
+                size="sm"
                 onClick={() => navigate("/support")}
-                title="Support Me"
-                className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                title="Support the Developer"
+                className="gap-2 h-9 bg-gradient-to-r from-primary/10 to-accent/30 border-primary/30 hover:border-primary/50 hover:from-primary/20 hover:to-accent/40 transition-all duration-300 group"
               >
-                <Heart className="w-4 h-4" />
+                <Gift className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline text-sm font-medium">Support</span>
               </Button>
               <Button
                 variant="ghost"
