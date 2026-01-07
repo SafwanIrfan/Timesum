@@ -119,23 +119,35 @@ const SupportMe = () => {
               </div>
             </CardHeader>
             <CardContent className="p-4 space-y-3">
-              {/* Buy Me a Coffee - Primary */}
-              <div>
+              {/* Buy Me a Coffee - Primary with attention-grabbing design */}
+              <div className="relative">
+                {/* Recommended badge */}
+                <div className="absolute -top-2 -right-2 z-10">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-destructive text-destructive-foreground shadow-md animate-pulse">
+                    ⭐ Recommended
+                  </span>
+                </div>
+                
                 <Button
-                  className="w-full gap-3 h-11 text-base font-medium bg-[#FFDD00] hover:bg-[#FFDD00]/90 text-black"
+                  className="w-full gap-3 h-14 text-lg font-bold bg-[#FFDD00] hover:bg-[#FFDD00]/90 text-black shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group"
                   onClick={() => window.open("https://buymeacoffee.com/mohdsafwanj", "_blank")}
                 >
-                  <Coffee className="w-5 h-5" />
-                  Buy Me a Coffee
+                  {/* Animated background shimmer */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                  
+                  {/* Coffee icon with bounce animation */}
+                  <Coffee className="w-6 h-6 animate-bounce" style={{ animationDuration: '2s' }} />
+                  <span className="relative z-10">Buy Me a Coffee</span>
                   <ExternalLink className="w-4 h-4 ml-auto opacity-60" />
                 </Button>
+                
                 <ul className="text-xs text-muted-foreground space-y-1 pl-1 mt-2">
                   <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
+                    <span className="text-[#FFDD00]">✓</span>
                     <span>Fast & easy</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
+                    <span className="text-[#FFDD00]">✓</span>
                     <span>Card payments accepted</span>
                   </li>
                 </ul>
