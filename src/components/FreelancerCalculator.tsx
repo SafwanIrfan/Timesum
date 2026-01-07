@@ -10,7 +10,8 @@ import { InvoiceDownload } from "./InvoiceDownload";
 import { TimerWidget } from "./TimerWidget";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Button } from "@/components/ui/button";
-import { Clock, DollarSign, Calculator, Trash2, LogOut } from "lucide-react";
+import { Clock, DollarSign, Calculator, Trash2, LogOut, Heart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.png";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export function FreelancerCalculator() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [timeFormat, setTimeFormat] = useState<TimeFormat>("hh:mm:ss");
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [hourlyRate, setHourlyRate] = useState<string>("");
@@ -277,6 +279,15 @@ export function FreelancerCalculator() {
                 currency={currency}
                 userName={user?.user_metadata?.full_name}
               />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/support")}
+                title="Support Me"
+                className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Heart className="w-4 h-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
