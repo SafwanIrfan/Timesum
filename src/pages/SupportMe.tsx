@@ -37,11 +37,11 @@ const SupportMe = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="container mx-auto px-4 h-12 flex items-center justify-between">
           <Button
             variant="outline"
             onClick={() => navigate("/")}
-            className="gap-2 h-10 px-4 bg-gradient-to-r from-primary/5 to-accent/10 border-primary/20 hover:border-primary/40 hover:from-primary/10 hover:to-accent/20 transition-all duration-300 group"
+            className="gap-2 h-9 px-4 bg-gradient-to-r from-primary/5 to-accent/10 border-primary/20 hover:border-primary/40 hover:from-primary/10 hover:to-accent/20 transition-all duration-300 group"
           >
             <ArrowLeft className="w-4 h-4 text-primary group-hover:-translate-x-1 transition-transform duration-300" />
             <span className="font-medium">Back</span>
@@ -50,46 +50,46 @@ const SupportMe = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-lg">
+      <main className="container mx-auto px-4 py-3 max-w-lg min-h-[calc(100svh-3rem)] flex flex-col">
         {/* Hero Section */}
-        <div className="text-center space-y-4 mb-8 animate-fade-in">
+        <div className="text-center space-y-2 mb-3 animate-fade-in">
           <div className="relative inline-flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 blur-xl opacity-30 animate-pulse" />
-            <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-pink-500 via-red-500 to-orange-400 shadow-2xl flex items-center justify-center">
-              <Heart className="w-10 h-10 text-white drop-shadow-lg" />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 blur-xl opacity-20 animate-pulse" />
+            <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-pink-500 via-red-500 to-orange-400 shadow-2xl flex items-center justify-center">
+              <Heart className="w-6 h-6 sm:w-7 sm:h-7 text-white drop-shadow-lg" />
             </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text">
             Support My Work
           </h1>
-          <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
+          <p className="text-muted-foreground text-sm max-w-sm mx-auto leading-relaxed">
             If you find this app helpful, your support keeps it alive! 💖
           </p>
         </div>
 
         {/* Payment Methods - Stacked for focus */}
-        <div className="space-y-4">
+        <div className="space-y-2 flex-1">
           {/* Raast ID - Pakistan */}
           <Card className="overflow-hidden border-2 border-success/30 hover:border-success/60 transition-all duration-300 animate-slide-up shadow-lg hover:shadow-xl bg-gradient-to-br from-success/5 to-transparent">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 mb-4">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-3 mb-2">
                 <div className="p-2.5 rounded-xl bg-success/20 shadow-inner">
                   <PakistanFlag />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">Pakistan</h3>
+                  <h3 className="font-bold text-sm sm:text-base">Pakistan</h3>
                   <p className="text-xs text-muted-foreground">Instant · No fees</p>
                 </div>
               </div>
-              
+
               <Button
-                className="w-full gap-3 h-14 text-base font-bold bg-gradient-to-r from-[#006600] to-[#008800] hover:from-[#007700] hover:to-[#009900] text-white shadow-lg hover:shadow-success/30 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group rounded-xl"
+                className="w-full gap-3 h-11 sm:h-12 text-sm sm:text-base font-bold bg-gradient-to-r from-[#006600] to-[#008800] hover:from-[#007700] hover:to-[#009900] text-white shadow-lg hover:shadow-success/30 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group rounded-xl"
                 onClick={() => copyToClipboard("03343461801", "raast")}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <span className="relative z-10 flex items-center gap-2">
-                  <span className="text-white/80 text-sm">Raast ID:</span>
-                  <code className="font-mono text-lg tracking-wide">03343461801</code>
+                  <span className="text-white/80 text-xs">Raast ID:</span>
+                  <code className="font-mono text-sm sm:text-base tracking-wide">03343461801</code>
                 </span>
                 {copiedField === "raast" ? (
                   <Check className="w-5 h-5 ml-auto text-white animate-scale-in" />
@@ -113,23 +113,23 @@ const SupportMe = () => {
               </span>
             </div>
             
-            <CardContent className="p-5 pt-6">
-              <div className="flex items-center gap-3 mb-4">
+            <CardContent className="p-3 pt-4">
+              <div className="flex items-center gap-3 mb-2">
                 <div className="p-2.5 rounded-xl bg-[#FFDD00]/30 shadow-inner">
-                  <span className="text-2xl">🌍</span>
+                  <span className="text-lg">🌍</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">International</h3>
+                  <h3 className="font-bold text-sm sm:text-base">International</h3>
                   <p className="text-xs text-muted-foreground">Fast · Card payments</p>
                 </div>
               </div>
-              
+
               <Button
-                className="w-full gap-3 h-14 text-base font-bold bg-gradient-to-r from-[#FFDD00] to-[#FFC400] hover:from-[#FFE333] hover:to-[#FFD000] text-black shadow-lg hover:shadow-[#FFDD00]/30 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group rounded-xl"
+                className="w-full gap-3 h-11 sm:h-12 text-sm sm:text-base font-bold bg-gradient-to-r from-[#FFDD00] to-[#FFC400] hover:from-[#FFE333] hover:to-[#FFD000] text-black shadow-lg hover:shadow-[#FFDD00]/30 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group rounded-xl"
                 onClick={() => window.open("https://buymeacoffee.com/mohdsafwanj", "_blank")}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <Coffee className="w-6 h-6 relative z-10 group-hover:animate-bounce" style={{ animationDuration: '1s' }} />
+                <Coffee className="w-5 h-5 relative z-10 group-hover:animate-bounce" style={{ animationDuration: "1s" }} />
                 <span className="relative z-10 font-bold">Buy Me a Coffee</span>
                 <ExternalLink className="w-4 h-4 ml-auto opacity-60 group-hover:opacity-100 transition-opacity" />
               </Button>
@@ -141,15 +141,15 @@ const SupportMe = () => {
             className="overflow-hidden border hover:border-accent/50 transition-all duration-300 animate-slide-up"
             style={{ animationDelay: "0.2s" }}
           >
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="p-2 rounded-lg bg-accent/20 shrink-0">
                     <Mail className="w-4 h-4 text-accent-foreground" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Questions? Get in touch</p>
-                    <code className="text-sm font-mono text-foreground">mohdsafwan2k5@gmail.com</code>
+                    <p className="text-[11px] text-muted-foreground">Questions? Get in touch</p>
+                    <code className="text-xs font-mono text-foreground break-all">mohdsafwan2k5@gmail.com</code>
                   </div>
                 </div>
                 <Button
@@ -170,7 +170,7 @@ const SupportMe = () => {
         </div>
 
         {/* Thank you footer */}
-        <p className="text-center text-sm text-muted-foreground mt-8 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+        <p className="hidden sm:block text-center text-xs text-muted-foreground mt-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
           Thank you for your support! Every contribution helps. 🙏
         </p>
       </main>
