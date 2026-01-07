@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { ToastAction } from '@/components/ui/toast';
 
 // Milestones for entries: 10, 50, 100, 200, 500, 1000...
 const ENTRY_MILESTONES = [10, 50, 100, 200, 500, 1000];
@@ -47,6 +48,7 @@ export function useSupportReminder(userId: string | undefined, entriesCount: num
           title: `🎉 ${milestone} entries logged!`,
           description: "Thanks for sticking with us! Consider supporting the project if it's helping you.",
           duration: 8000,
+          action: <ToastAction altText="Support" onClick={() => navigate('/support')}>Support</ToastAction>,
         });
       }, 1000);
 
@@ -58,7 +60,7 @@ export function useSupportReminder(userId: string | undefined, entriesCount: num
       setShownMilestones(updated);
       localStorage.setItem(`${STORAGE_KEY}_${userId}`, JSON.stringify(updated));
     }
-  }, [entriesCount, userId, shownMilestones]);
+  }, [entriesCount, userId, shownMilestones, navigate]);
 
   // Check for tag milestones
   useEffect(() => {
@@ -74,6 +76,7 @@ export function useSupportReminder(userId: string | undefined, entriesCount: num
           title: `✨ ${milestone} tags created!`,
           description: "You're getting organized! Love using Timesum? Consider supporting its development.",
           duration: 8000,
+          action: <ToastAction altText="Support" onClick={() => navigate('/support')}>Support</ToastAction>,
         });
       }, 1500);
 
@@ -84,5 +87,5 @@ export function useSupportReminder(userId: string | undefined, entriesCount: num
       setShownMilestones(updated);
       localStorage.setItem(`${STORAGE_KEY}_${userId}`, JSON.stringify(updated));
     }
-  }, [tagsCount, userId, shownMilestones]);
+  }, [tagsCount, userId, shownMilestones, navigate]);
 }
