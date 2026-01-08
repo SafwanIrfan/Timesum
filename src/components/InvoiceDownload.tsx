@@ -323,7 +323,7 @@ export function InvoiceDownload({
         <div className="space-y-4 py-4">
           {/* Invoice Preview */}
           <div className="p-4 border border-border rounded-lg bg-accent/30 space-y-3">
-            {filterTable !== "Untagged" && (
+            {filterLabel !== "Untagged" && (
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Tag</span>
                 <span className="text-sm font-medium">{filterLabel}</span>
