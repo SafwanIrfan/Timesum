@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { TimeEntry } from '@/types/freelancer';
+import { TimeEntry, Currency } from '@/types/freelancer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Clock, Tag, Filter } from 'lucide-react';
-import { decimalToHHMMSS } from '@/utils/timeUtils';
+import { Trash2, Clock, Tag, Filter, FileDown } from 'lucide-react';
+import { decimalToHHMMSS, formatCurrency } from '@/utils/timeUtils';
 import { ConfirmDialog } from './ConfirmDialog';
+import { InvoiceDownload } from './InvoiceDownload';
 import {
   Select,
   SelectContent,
@@ -19,9 +20,20 @@ interface TimeEntryListProps {
   onRemove: (id: string) => void;
   tagFilter: string;
   onTagFilterChange: (value: string) => void;
+  hourlyRate: string;
+  currency: Currency;
+  userName?: string;
 }
 
-export function TimeEntryList({ entries, onRemove, tagFilter, onTagFilterChange }: TimeEntryListProps) {
+export function TimeEntryList({ 
+  entries, 
+  onRemove, 
+  tagFilter, 
+  onTagFilterChange,
+  hourlyRate,
+  currency,
+  userName 
+}: TimeEntryListProps) {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; value: string } | null>(null);
 
   // Get unique tags from entries
@@ -57,9 +69,9 @@ export function TimeEntryList({ entries, onRemove, tagFilter, onTagFilterChange 
 
   return (
     <>
-      {/* Tag Filter */}
-      {(uniqueTags.length > 0 || tagFilter !== 'all') && (
-        <div className="mb-4">
+      {/* Tag Filter & Invoice Download */}
+      <div className="mb-4 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+        {(uniqueTags.length > 0 || tagFilter !== 'all') && (
           <Select value={tagFilter} onValueChange={onTagFilterChange}>
             <SelectTrigger className="w-full sm:w-52 h-9 text-sm">
               <div className="flex items-center gap-2">
@@ -77,8 +89,17 @@ export function TimeEntryList({ entries, onRemove, tagFilter, onTagFilterChange 
               ))}
             </SelectContent>
           </Select>
-        </div>
-      )}
+        )}
+        
+        {/* Invoice Download Button */}
+        <InvoiceDownload
+          entries={filteredEntries}
+          hourlyRate={hourlyRate}
+          currency={currency}
+          userName={userName}
+          filterLabel={tagFilter === 'all' ? 'All Entries' : tagFilter === 'untagged' ? 'Untagged' : tagFilter}
+        />
+      </div>
 
       {filteredEntries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
