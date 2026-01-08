@@ -24,35 +24,6 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
   const [activeTab, setActiveTab] = useState('signin');
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-
-  const handleForgotPassword = async () => {
-    const emailResult = emailSchema.safeParse(email);
-    if (!emailResult.success) {
-      setErrors({ email: 'Please enter a valid email address' });
-      return;
-    }
-    
-    setIsLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth`,
-    });
-    
-    if (error) {
-      toast({
-        title: 'Reset failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: 'Check your email',
-        description: 'We sent you a password reset link.',
-      });
-      setShowForgotPassword(false);
-    }
-    setIsLoading(false);
-  };
 
   useEffect(() => {
     if (!loading && user) {
@@ -175,80 +146,39 @@ export default function Auth() {
             </TabsList>
             
             <TabsContent value="signin" className="space-y-4 mt-4">
-              {showForgotPassword ? (
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Enter your email and we'll send you a reset link.
-                  </p>
-                  <div className="space-y-2">
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
                   </div>
-                  <Button onClick={handleForgotPassword} className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Sending...' : 'Send Reset Link'}
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full" 
-                    onClick={() => setShowForgotPassword(false)}
-                  >
-                    Back to Sign In
-                  </Button>
+                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                 </div>
-              ) : (
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                    {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
-                  </div>
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setShowForgotPassword(true)}
-                      className="text-sm text-primary hover:underline"
-                    >
-                      Forgot password?
-                    </button>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Signing in...' : 'Sign In'}
-                  </Button>
-                </form>
-              )}
+                  {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Signing in...' : 'Sign In'}
+                </Button>
+              </form>
             </TabsContent>
             
             <TabsContent value="signup" className="space-y-4 mt-4">
