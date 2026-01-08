@@ -289,7 +289,10 @@ export function InvoiceDownload({
 
           <div class="footer">
             <p>Thank you for your business!</p>
-            <a href="https://timesum-website.vercel.app/">Generated with Timesum</a>
+            <p>
+            Generated with 
+            <a class="no-underline text-black" href="https://timesum-website.vercel.app/">Timesum</a>
+            </p>
           </div>
 
           <script>
