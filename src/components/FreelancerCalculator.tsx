@@ -6,7 +6,6 @@ import { TimeEntryList } from "./TimeEntryList";
 import { CurrencySelect } from "./CurrencySelect";
 import { HourlyRateInput } from "./HourlyRateInput";
 import { SummaryCard } from "./SummaryCard";
-import { InvoiceDownload } from "./InvoiceDownload";
 import { TimerWidget } from "./TimerWidget";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Button } from "@/components/ui/button";
@@ -125,16 +124,19 @@ export function FreelancerCalculator() {
     return () => clearTimeout(debounce);
   }, [currency, hourlyRate, user, isLoading]);
 
-  // Filter entries by tag (for list display only)
+  // Filter entries by tag
   const filteredEntries = tagFilter === 'all' 
     ? entries 
     : tagFilter === 'untagged'
     ? entries.filter(e => !e.tag)
     : entries.filter(e => e.tag === tagFilter);
 
-  // Summary cards always show totals from ALL entries
-  const totalDecimalHours = entries.reduce((sum, entry) => sum + entry.decimalHours, 0);
+  // Summary cards show totals based on current filter
+  const totalDecimalHours = filteredEntries.reduce((sum, entry) => sum + entry.decimalHours, 0);
   const totalEarnings = totalDecimalHours * (parseFloat(hourlyRate) || 0);
+  
+  // Get filter label for display
+  const filterLabel = tagFilter === 'all' ? 'all entries' : tagFilter === 'untagged' ? 'untagged entries' : `"${tagFilter}"`;
 
   const handleAddTag = (tag: string) => {
     if (!tags.includes(tag)) {
@@ -281,12 +283,6 @@ export function FreelancerCalculator() {
           <div className="flex items-center justify-between">
             <img src={logo} alt="Timesum" className="h-10 sm:h-12 md:h-14 w-auto" />
             <div className="flex items-center gap-2 sm:gap-3">
-              <InvoiceDownload
-                entries={entries}
-                hourlyRate={hourlyRate}
-                currency={currency}
-                userName={user?.user_metadata?.full_name}
-              />
               <Button
                 variant="outline"
                 size="sm"
@@ -329,7 +325,7 @@ export function FreelancerCalculator() {
             <SummaryCard
               title="Total Hours"
               value={decimalToHHMMSS(totalDecimalHours)}
-              subtitle={`${entries.length} entries logged`}
+              subtitle={`${filteredEntries.length} entries • ${filterLabel}`}
               icon={<Clock className="w-6 h-6" />}
               variant="default"
             />
@@ -343,7 +339,7 @@ export function FreelancerCalculator() {
             <SummaryCard
               title="Total Earning"
               value={formatCurrency(totalEarnings, currency.symbol)}
-              subtitle={`${entries.length} entries logged`}
+              subtitle={`${filteredEntries.length} entries • ${filterLabel}`}
               icon={<Calculator className="w-6 h-6" />}
               variant="default"
             />
@@ -385,6 +381,9 @@ export function FreelancerCalculator() {
                 onRemove={handleRemoveEntry}
                 tagFilter={tagFilter}
                 onTagFilterChange={setTagFilter}
+                hourlyRate={hourlyRate}
+                currency={currency}
+                userName={user?.user_metadata?.full_name}
               />
             </div>
 

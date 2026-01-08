@@ -1,10 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TimeEntry, Currency } from '@/types/freelancer';
 import { decimalToHHMMSS, formatCurrency } from '@/utils/timeUtils';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { FileDown, CheckSquare, Sparkles, Heart } from 'lucide-react';
+import { FileDown, Heart, Sparkles } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,13 +11,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { useState } from 'react';
 
 interface InvoiceDownloadProps {
   entries: TimeEntry[];
   hourlyRate: string;
   currency: Currency;
   userName?: string;
+  filterLabel?: string;
 }
 
 interface TagGroup {
@@ -33,38 +33,25 @@ export function InvoiceDownload({
   hourlyRate,
   currency,
   userName,
+  filterLabel = 'All Entries',
 }: InvoiceDownloadProps) {
   const navigate = useNavigate();
-  const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set());
   const [isOpen, setIsOpen] = useState(false);
 
   const rate = parseFloat(hourlyRate) || 0;
 
-  // When dialog opens, select all entries by default
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (open) {
-      setSelectedEntryIds(new Set(entries.map(e => e.id)));
-    }
-  };
+  // Calculate totals for filtered entries
+  const totalHours = useMemo(() => {
+    return entries.reduce((sum, e) => sum + e.decimalHours, 0);
+  }, [entries]);
 
-  // Selected entries for invoice
-  const selectedEntries = useMemo(() => {
-    return entries.filter(e => selectedEntryIds.has(e.id));
-  }, [entries, selectedEntryIds]);
+  const totalEarnings = totalHours * rate;
 
-  // Calculate totals for selected entries
-  const selectedTotalHours = useMemo(() => {
-    return selectedEntries.reduce((sum, e) => sum + e.decimalHours, 0);
-  }, [selectedEntries]);
-
-  const selectedTotalEarnings = selectedTotalHours * rate;
-
-  // Group selected entries by tag
+  // Group entries by tag
   const tagGroups = useMemo((): TagGroup[] => {
     const groups: Record<string, TimeEntry[]> = {};
     
-    selectedEntries.forEach(entry => {
+    entries.forEach(entry => {
       const tagKey = entry.tag || 'No Tag';
       if (!groups[tagKey]) {
         groups[tagKey] = [];
@@ -74,39 +61,19 @@ export function InvoiceDownload({
 
     return Object.entries(groups)
       .map(([tag, tagEntries]) => {
-        const totalHours = tagEntries.reduce((sum, e) => sum + e.decimalHours, 0);
+        const groupTotalHours = tagEntries.reduce((sum, e) => sum + e.decimalHours, 0);
         return {
           tag,
           entries: tagEntries,
-          totalHours,
-          totalAmount: totalHours * rate,
+          totalHours: groupTotalHours,
+          totalAmount: groupTotalHours * rate,
         };
       })
       .sort((a, b) => b.totalHours - a.totalHours);
-  }, [selectedEntries, rate]);
-
-  const toggleEntry = (id: string) => {
-    setSelectedEntryIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
-  };
-
-  const selectAll = () => {
-    setSelectedEntryIds(new Set(entries.map(e => e.id)));
-  };
-
-  const deselectAll = () => {
-    setSelectedEntryIds(new Set());
-  };
+  }, [entries, rate]);
 
   const handleDownload = () => {
-    if (selectedEntries.length === 0) return;
+    if (entries.length === 0) return;
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -265,7 +232,7 @@ export function InvoiceDownload({
             <div class="invoice-meta">
               <p class="invoice-number">${invoiceNumber}</p>
               <p>Date: ${invoiceDate}</p>
-              <p>Entries: ${selectedEntries.length}</p>
+              <p>Entries: ${entries.length}</p>
             </div>
           </div>
 
@@ -305,7 +272,7 @@ export function InvoiceDownload({
             <table class="summary-table">
               <tr>
                 <td>Total Hours</td>
-                <td class="text-right">${decimalToHHMMSS(selectedTotalHours)}</td>
+                <td class="text-right">${decimalToHHMMSS(totalHours)}</td>
               </tr>
               <tr>
                 <td>Hourly Rate</td>
@@ -313,7 +280,7 @@ export function InvoiceDownload({
               </tr>
               <tr class="summary-total">
                 <td><strong>Total Due</strong></td>
-                <td class="text-right"><strong>${formatCurrency(selectedTotalEarnings, currency.symbol)}</strong></td>
+                <td class="text-right"><strong>${formatCurrency(totalEarnings, currency.symbol)}</strong></td>
               </tr>
             </table>
           </div>
@@ -339,106 +306,48 @@ export function InvoiceDownload({
   const isDisabled = entries.length === 0 || !hourlyRate;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
           size="sm"
           disabled={isDisabled}
-          className="gap-2 text-sm h-9"
+          className="gap-2 text-sm h-9 w-full sm:w-auto"
         >
           <FileDown className="w-4 h-4" />
-          <span className="hidden sm:inline">Download Invoice</span>
-          <span className="sm:hidden">Invoice</span>
+          <span>Invoice ({entries.length})</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden p-0">
-        <DialogHeader className="px-6 pt-6 pb-0">
-          <DialogTitle>Create Invoice</DialogTitle>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Download Invoice</DialogTitle>
         </DialogHeader>
         
-        {/* Scrollable Content Area */}
-        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-4">
-          {/* Entry Selection Header */}
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Select entries to include ({selectedEntryIds.size} of {entries.length})
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={selectAll} className="text-xs h-7">
-                <CheckSquare className="w-3 h-3 mr-1" />
-                All
-              </Button>
-              <Button variant="outline" size="sm" onClick={deselectAll} className="text-xs h-7">
-                None
-              </Button>
+        <div className="space-y-4 py-4">
+          {/* Invoice Preview */}
+          <div className="p-4 border border-border rounded-lg bg-accent/30 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Filter</span>
+              <span className="text-sm font-medium">{filterLabel}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Entries</span>
+              <span className="text-sm font-medium">{entries.length}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Total Hours</span>
+              <span className="text-sm font-medium font-mono">{decimalToHHMMSS(totalHours)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Rate</span>
+              <span className="text-sm font-medium">{formatCurrency(rate, currency.symbol)}/hr</span>
+            </div>
+            <div className="flex justify-between items-center pt-3 border-t border-border">
+              <span className="font-semibold">Total Due</span>
+              <span className="font-bold text-primary text-lg">{formatCurrency(totalEarnings, currency.symbol)}</span>
             </div>
           </div>
 
-          {/* Entries List */}
-          <ScrollArea className="h-[180px] border rounded-lg">
-            <div className="p-2 space-y-1">
-              {entries.map((entry) => (
-                <label
-                  key={entry.id}
-                  className="flex items-center gap-3 p-2 rounded-md hover:bg-accent cursor-pointer"
-                >
-                  <Checkbox
-                    checked={selectedEntryIds.has(entry.id)}
-                    onCheckedChange={() => toggleEntry(entry.id)}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm">
-                        {decimalToHHMMSS(entry.decimalHours)}
-                      </span>
-                      {entry.tag && (
-                        <span className="text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                          {entry.tag}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {entry.createdAt.toLocaleDateString()} • {entry.value}
-                    </span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </ScrollArea>
-
-          {/* Preview Summary */}
-          {selectedEntries.length > 0 && (
-            <div className="p-3 border border-border rounded-lg bg-accent/30 space-y-2">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground">Invoice Summary</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedEntries.length} entries selected
-                  </p>
-                </div>
-              </div>
-              
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total Hours</span>
-                  <span className="font-medium font-mono">{decimalToHHMMSS(selectedTotalHours)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Rate</span>
-                  <span className="font-medium">{formatCurrency(rate, currency.symbol)}/hr</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t border-border">
-                  <span className="font-semibold">Total</span>
-                  <span className="font-bold text-primary">{formatCurrency(selectedTotalEarnings, currency.symbol)}</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer - Fixed at Bottom */}
-        <div className="px-6 pb-6 pt-2 space-y-3 border-t border-border bg-background">
           {/* Support Reminder */}
           <div className="p-3 bg-gradient-to-r from-primary/10 to-accent/20 border border-primary/20 rounded-lg">
             <div className="flex items-center gap-3">
@@ -463,16 +372,16 @@ export function InvoiceDownload({
               </Button>
             </div>
           </div>
-
-          <Button 
-            onClick={handleDownload} 
-            className="w-full gap-2"
-            disabled={selectedEntries.length === 0}
-          >
-            <FileDown className="w-4 h-4" />
-            Download Invoice ({selectedEntries.length} entries)
-          </Button>
         </div>
+
+        <Button 
+          onClick={handleDownload} 
+          className="w-full gap-2"
+          disabled={entries.length === 0}
+        >
+          <FileDown className="w-4 h-4" />
+          Download Invoice
+        </Button>
       </DialogContent>
     </Dialog>
   );
