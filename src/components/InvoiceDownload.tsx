@@ -291,7 +291,7 @@ export function InvoiceDownload({
             <p>Thank you for your business!</p>
             <p>
             Generated with 
-            <a style="text-decoration: none; color: inherit;" href="https://timesum-website.vercel.app/">Timesum</a>
+            <a style="text-decoration: none; color: black;" href="https://timesum-website.vercel.app/">Timesum</a>
             </p>
           </div>
 
