@@ -11,10 +11,10 @@ This is a modern web application built with a fast, scalable, and maintainable f
 ### Installation & Development
 
 # Clone the repository
-git clone https://github.com/SafwanIrfan/Timesum.git
+git clone https://github.com/SafwanIrfan/timesum.git
 
 # Navigate to the project directory
-cd Timesum
+cd timesum
 
 # Install dependencies
 npm install
