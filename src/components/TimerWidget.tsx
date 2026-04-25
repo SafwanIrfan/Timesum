@@ -95,39 +95,69 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
   const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!manualStartTime || !manualEndTime) {
-      toast({
-        title: 'Please fill in both times',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     try {
-      // Parse times as today's date
-      const today = new Date().toISOString().split('T')[0];
-      const startDate = new Date(`${today}T${manualStartTime}`);
-      const endDate = new Date(`${today}T${manualEndTime}`);
+      let decimalHours = 0;
+      let displayValue = '';
+      let diffSeconds = 0;
 
-      // Handle overnight shifts
-      if (endDate <= startDate) {
-        endDate.setDate(endDate.getDate() + 1);
+      if (manualMode === 'duration') {
+        const trimmed = manualDuration.trim();
+        if (!trimmed) {
+          toast({ title: 'Please enter a duration', variant: 'destructive' });
+          return;
+        }
+        const isTime = trimmed.includes(':');
+        if (isTime) {
+          if (!isValidHHMMSS(trimmed)) {
+            toast({
+              title: 'Invalid format',
+              description: 'Use hh:mm:ss, hh:mm, or just hours',
+              variant: 'destructive',
+            });
+            return;
+          }
+          decimalHours = parseHHMMSS(trimmed);
+        } else {
+          if (!isValidDecimal(trimmed)) {
+            toast({
+              title: 'Invalid format',
+              description: 'Enter a valid decimal number (e.g. 2.5)',
+              variant: 'destructive',
+            });
+            return;
+          }
+          decimalHours = parseDecimal(trimmed);
+        }
+        if (decimalHours <= 0) {
+          toast({ title: 'Duration must be greater than zero', variant: 'destructive' });
+          return;
+        }
+        diffSeconds = Math.round(decimalHours * 3600);
+        displayValue = trimmed;
+      } else {
+        if (!manualStartTime || !manualEndTime) {
+          toast({ title: 'Please fill in both times', variant: 'destructive' });
+          return;
+        }
+        const today = new Date().toISOString().split('T')[0];
+        const startDate = new Date(`${today}T${manualStartTime}`);
+        const endDate = new Date(`${today}T${manualEndTime}`);
+        if (endDate <= startDate) {
+          endDate.setDate(endDate.getDate() + 1);
+        }
+        const diffMs = endDate.getTime() - startDate.getTime();
+        diffSeconds = Math.floor(diffMs / 1000);
+        if (diffSeconds < 1) {
+          toast({
+            title: 'Invalid time range',
+            description: 'End time must be after start time',
+            variant: 'destructive',
+          });
+          return;
+        }
+        decimalHours = secondsToDecimalHours(diffSeconds);
+        displayValue = `${manualStartTime} - ${manualEndTime}`;
       }
-
-      const diffMs = endDate.getTime() - startDate.getTime();
-      const diffSeconds = Math.floor(diffMs / 1000);
-      
-      if (diffSeconds < 1) {
-        toast({
-          title: 'Invalid time range',
-          description: 'End time must be after start time',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      const decimalHours = secondsToDecimalHours(diffSeconds);
-      const displayValue = `${manualStartTime} - ${manualEndTime}`;
 
       setIsSaving(true);
       await onSaveTime(decimalHours, displayValue, manualTag || undefined);
@@ -140,6 +170,7 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
       // Reset form
       setManualStartTime('');
       setManualEndTime('');
+      setManualDuration('');
       setManualTag('');
     } catch (error) {
       toast({
