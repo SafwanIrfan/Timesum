@@ -44,7 +44,7 @@ export function useTimer() {
     projectLabel: '',
   });
   
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isInitializedRef = useRef(false);
   const originalTitleRef = useRef<string>(DEFAULT_TITLE);
 
