@@ -15,6 +15,7 @@ import { useTimer, formatTimerDisplay, secondsToDecimalHours } from '@/hooks/use
 import { TagSelect } from './TagSelect';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { isValidHHMMSS, isValidDecimal, parseHHMMSS, parseDecimal } from '@/utils/timeUtils';
 
 interface TimerWidgetProps {
   onSaveTime: (decimalHours: number, displayValue: string, tag?: string) => Promise<void>;
@@ -32,6 +33,8 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
   const [manualStartTime, setManualStartTime] = useState('');
   const [manualEndTime, setManualEndTime] = useState('');
   const [manualTag, setManualTag] = useState('');
+  const [manualMode, setManualMode] = useState<'duration' | 'range'>('duration');
+  const [manualDuration, setManualDuration] = useState('');
 
   const handleStartTimer = () => {
     timer.start(selectedTag);
