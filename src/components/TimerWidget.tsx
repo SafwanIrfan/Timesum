@@ -281,50 +281,97 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
         {/* Manual Entry Tab */}
         <TabsContent value="manual" className="space-y-5 mt-0">
           <form onSubmit={handleManualSubmit} className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  Start Time
-                </label>
-                <Input
-                  type="time"
-                  value={manualStartTime}
-                  onChange={(e) => setManualStartTime(e.target.value)}
-                  className="bg-background h-10"
-                  placeholder="09:00"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  End Time
-                </label>
-                <Input
-                  type="time"
-                  value={manualEndTime}
-                  onChange={(e) => setManualEndTime(e.target.value)}
-                  className="bg-background h-10"
-                  placeholder="17:00"
-                />
-              </div>
+            {/* Mode toggle: Duration vs Range */}
+            <div className="flex items-center gap-1 p-0.5 bg-secondary rounded-lg">
+              <button
+                type="button"
+                onClick={() => setManualMode('duration')}
+                className={cn(
+                  'flex-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all',
+                  manualMode === 'duration'
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Duration
+              </button>
+              <button
+                type="button"
+                onClick={() => setManualMode('range')}
+                className={cn(
+                  'flex-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all',
+                  manualMode === 'range'
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Start &amp; End
+              </button>
             </div>
 
-            {/* Calculated Duration Preview */}
-            {manualStartTime && manualEndTime && (
-              <div className="p-3 rounded-lg bg-accent/50 text-center">
-                <span className="text-sm text-muted-foreground">Duration: </span>
-                <span className="font-mono font-semibold text-primary">
-                  {(() => {
-                    const today = new Date().toISOString().split('T')[0];
-                    const startDate = new Date(`${today}T${manualStartTime}`);
-                    const endDate = new Date(`${today}T${manualEndTime}`);
-                    if (endDate <= startDate) {
-                      endDate.setDate(endDate.getDate() + 1);
-                    }
-                    const diffSeconds = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
-                    return formatTimerDisplay(diffSeconds);
-                  })()}
-                </span>
+            {manualMode === 'duration' ? (
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  Total time worked
+                </label>
+                <Input
+                  type="text"
+                  value={manualDuration}
+                  onChange={(e) => setManualDuration(e.target.value)}
+                  className="bg-background h-10 font-mono"
+                  placeholder="e.g. 2:30:00 or 2.5"
+                />
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Supports hh:mm:ss, hh:mm, or decimal hours
+                </p>
               </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Start Time
+                    </label>
+                    <Input
+                      type="time"
+                      value={manualStartTime}
+                      onChange={(e) => setManualStartTime(e.target.value)}
+                      className="bg-background h-10"
+                      placeholder="09:00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      End Time
+                    </label>
+                    <Input
+                      type="time"
+                      value={manualEndTime}
+                      onChange={(e) => setManualEndTime(e.target.value)}
+                      className="bg-background h-10"
+                      placeholder="17:00"
+                    />
+                  </div>
+                </div>
+
+                {manualStartTime && manualEndTime && (
+                  <div className="p-3 rounded-lg bg-accent/50 text-center">
+                    <span className="text-sm text-muted-foreground">Duration: </span>
+                    <span className="font-mono font-semibold text-primary">
+                      {(() => {
+                        const today = new Date().toISOString().split('T')[0];
+                        const startDate = new Date(`${today}T${manualStartTime}`);
+                        const endDate = new Date(`${today}T${manualEndTime}`);
+                        if (endDate <= startDate) {
+                          endDate.setDate(endDate.getDate() + 1);
+                        }
+                        const diffSeconds = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
+                        return formatTimerDisplay(diffSeconds);
+                      })()}
+                    </span>
+                  </div>
+                )}
+              </>
             )}
 
             <div>
@@ -345,7 +392,12 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
               type="submit"
               variant="gradient"
               className="w-full gap-2 h-10"
-              disabled={isSaving || !manualStartTime || !manualEndTime}
+              disabled={
+                isSaving ||
+                (manualMode === 'duration'
+                  ? !manualDuration.trim()
+                  : !manualStartTime || !manualEndTime)
+              }
             >
               <Plus className="w-4 h-4" />
               Add Time Entry
