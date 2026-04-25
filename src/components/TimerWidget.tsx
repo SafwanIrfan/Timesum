@@ -15,6 +15,7 @@ import { useTimer, formatTimerDisplay, secondsToDecimalHours } from '@/hooks/use
 import { TagSelect } from './TagSelect';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { isValidHHMMSS, isValidDecimal, parseHHMMSS, parseDecimal } from '@/utils/timeUtils';
 
 interface TimerWidgetProps {
   onSaveTime: (decimalHours: number, displayValue: string, tag?: string) => Promise<void>;
@@ -32,6 +33,8 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
   const [manualStartTime, setManualStartTime] = useState('');
   const [manualEndTime, setManualEndTime] = useState('');
   const [manualTag, setManualTag] = useState('');
+  const [manualMode, setManualMode] = useState<'duration' | 'range'>('duration');
+  const [manualDuration, setManualDuration] = useState('');
 
   const handleStartTimer = () => {
     timer.start(selectedTag);
@@ -92,39 +95,69 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
   const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!manualStartTime || !manualEndTime) {
-      toast({
-        title: 'Please fill in both times',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     try {
-      // Parse times as today's date
-      const today = new Date().toISOString().split('T')[0];
-      const startDate = new Date(`${today}T${manualStartTime}`);
-      const endDate = new Date(`${today}T${manualEndTime}`);
+      let decimalHours = 0;
+      let displayValue = '';
+      let diffSeconds = 0;
 
-      // Handle overnight shifts
-      if (endDate <= startDate) {
-        endDate.setDate(endDate.getDate() + 1);
+      if (manualMode === 'duration') {
+        const trimmed = manualDuration.trim();
+        if (!trimmed) {
+          toast({ title: 'Please enter a duration', variant: 'destructive' });
+          return;
+        }
+        const isTime = trimmed.includes(':');
+        if (isTime) {
+          if (!isValidHHMMSS(trimmed)) {
+            toast({
+              title: 'Invalid format',
+              description: 'Use hh:mm:ss, hh:mm, or just hours',
+              variant: 'destructive',
+            });
+            return;
+          }
+          decimalHours = parseHHMMSS(trimmed);
+        } else {
+          if (!isValidDecimal(trimmed)) {
+            toast({
+              title: 'Invalid format',
+              description: 'Enter a valid decimal number (e.g. 2.5)',
+              variant: 'destructive',
+            });
+            return;
+          }
+          decimalHours = parseDecimal(trimmed);
+        }
+        if (decimalHours <= 0) {
+          toast({ title: 'Duration must be greater than zero', variant: 'destructive' });
+          return;
+        }
+        diffSeconds = Math.round(decimalHours * 3600);
+        displayValue = trimmed;
+      } else {
+        if (!manualStartTime || !manualEndTime) {
+          toast({ title: 'Please fill in both times', variant: 'destructive' });
+          return;
+        }
+        const today = new Date().toISOString().split('T')[0];
+        const startDate = new Date(`${today}T${manualStartTime}`);
+        const endDate = new Date(`${today}T${manualEndTime}`);
+        if (endDate <= startDate) {
+          endDate.setDate(endDate.getDate() + 1);
+        }
+        const diffMs = endDate.getTime() - startDate.getTime();
+        diffSeconds = Math.floor(diffMs / 1000);
+        if (diffSeconds < 1) {
+          toast({
+            title: 'Invalid time range',
+            description: 'End time must be after start time',
+            variant: 'destructive',
+          });
+          return;
+        }
+        decimalHours = secondsToDecimalHours(diffSeconds);
+        displayValue = `${manualStartTime} - ${manualEndTime}`;
       }
-
-      const diffMs = endDate.getTime() - startDate.getTime();
-      const diffSeconds = Math.floor(diffMs / 1000);
-      
-      if (diffSeconds < 1) {
-        toast({
-          title: 'Invalid time range',
-          description: 'End time must be after start time',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      const decimalHours = secondsToDecimalHours(diffSeconds);
-      const displayValue = `${manualStartTime} - ${manualEndTime}`;
 
       setIsSaving(true);
       await onSaveTime(decimalHours, displayValue, manualTag || undefined);
@@ -137,6 +170,7 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
       // Reset form
       setManualStartTime('');
       setManualEndTime('');
+      setManualDuration('');
       setManualTag('');
     } catch (error) {
       toast({
@@ -247,50 +281,97 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
         {/* Manual Entry Tab */}
         <TabsContent value="manual" className="space-y-5 mt-0">
           <form onSubmit={handleManualSubmit} className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  Start Time
-                </label>
-                <Input
-                  type="time"
-                  value={manualStartTime}
-                  onChange={(e) => setManualStartTime(e.target.value)}
-                  className="bg-background h-10"
-                  placeholder="09:00"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  End Time
-                </label>
-                <Input
-                  type="time"
-                  value={manualEndTime}
-                  onChange={(e) => setManualEndTime(e.target.value)}
-                  className="bg-background h-10"
-                  placeholder="17:00"
-                />
-              </div>
+            {/* Mode toggle: Duration vs Range */}
+            <div className="flex items-center gap-1 p-0.5 bg-secondary rounded-lg">
+              <button
+                type="button"
+                onClick={() => setManualMode('duration')}
+                className={cn(
+                  'flex-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all',
+                  manualMode === 'duration'
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Duration
+              </button>
+              <button
+                type="button"
+                onClick={() => setManualMode('range')}
+                className={cn(
+                  'flex-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all',
+                  manualMode === 'range'
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Start &amp; End
+              </button>
             </div>
 
-            {/* Calculated Duration Preview */}
-            {manualStartTime && manualEndTime && (
-              <div className="p-3 rounded-lg bg-accent/50 text-center">
-                <span className="text-sm text-muted-foreground">Duration: </span>
-                <span className="font-mono font-semibold text-primary">
-                  {(() => {
-                    const today = new Date().toISOString().split('T')[0];
-                    const startDate = new Date(`${today}T${manualStartTime}`);
-                    const endDate = new Date(`${today}T${manualEndTime}`);
-                    if (endDate <= startDate) {
-                      endDate.setDate(endDate.getDate() + 1);
-                    }
-                    const diffSeconds = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
-                    return formatTimerDisplay(diffSeconds);
-                  })()}
-                </span>
+            {manualMode === 'duration' ? (
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  Total time worked
+                </label>
+                <Input
+                  type="text"
+                  value={manualDuration}
+                  onChange={(e) => setManualDuration(e.target.value)}
+                  className="bg-background h-10 font-mono"
+                  placeholder="e.g. 2:30:00 or 2.5"
+                />
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Supports hh:mm:ss, hh:mm, or decimal hours
+                </p>
               </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Start Time
+                    </label>
+                    <Input
+                      type="time"
+                      value={manualStartTime}
+                      onChange={(e) => setManualStartTime(e.target.value)}
+                      className="bg-background h-10"
+                      placeholder="09:00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      End Time
+                    </label>
+                    <Input
+                      type="time"
+                      value={manualEndTime}
+                      onChange={(e) => setManualEndTime(e.target.value)}
+                      className="bg-background h-10"
+                      placeholder="17:00"
+                    />
+                  </div>
+                </div>
+
+                {manualStartTime && manualEndTime && (
+                  <div className="p-3 rounded-lg bg-accent/50 text-center">
+                    <span className="text-sm text-muted-foreground">Duration: </span>
+                    <span className="font-mono font-semibold text-primary">
+                      {(() => {
+                        const today = new Date().toISOString().split('T')[0];
+                        const startDate = new Date(`${today}T${manualStartTime}`);
+                        const endDate = new Date(`${today}T${manualEndTime}`);
+                        if (endDate <= startDate) {
+                          endDate.setDate(endDate.getDate() + 1);
+                        }
+                        const diffSeconds = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
+                        return formatTimerDisplay(diffSeconds);
+                      })()}
+                    </span>
+                  </div>
+                )}
+              </>
             )}
 
             <div>
@@ -311,7 +392,12 @@ export function TimerWidget({ onSaveTime, tags, onAddTag, onDeleteTag }: TimerWi
               type="submit"
               variant="gradient"
               className="w-full gap-2 h-10"
-              disabled={isSaving || !manualStartTime || !manualEndTime}
+              disabled={
+                isSaving ||
+                (manualMode === 'duration'
+                  ? !manualDuration.trim()
+                  : !manualStartTime || !manualEndTime)
+              }
             >
               <Plus className="w-4 h-4" />
               Add Time Entry
